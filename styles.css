@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200&display=swap');
+
+html, body {
+    display: flex;
+    margin:0;
+    padding:0;
+    width: 100vw;
+    height: 100vh;
+}
+
+.side-nav{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: .9em;
+  height: 100%;
+  top: 0;
+  left: -350px;
+  width: 350px;
+  position: fixed;
+  background: linear-gradient(180deg,#0e4c66 0,#001a30 100%);
+  padding: 6px;
+  padding-right: 12px;
+  overflow-x: hidden;
+  transition: .4s;
+  -webkit-box-shadow: 0 0 10px rgba(0,0,0,.5);
+  -moz-box-shadow: 0 0 10px rgba(0,0,0,.5);
+  box-shadow: 0 0 10px rgba(0,0,0,.5);
+  z-index: 1001 !important;
+}
+
+.closebtn {
+  color: white;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 1.1em;
+  margin-left: 50px;
+  cursor: pointer;
+}
+
+
+.logo{
+  position: absolute;
+  width: 230px;
+  height: 50px;
+}
+
+.logoPosition{
+  bottom: 0%;
+  right: 80px;
+  position: absolute;
+  width: 230px;
+  height: 50px;
+  z-index: 1000; 
+}
+
+
+#map {
+    width: 100vw;
+    height:100vh;
+    margin:0;
+    padding:0;
+    background-color: #030303;
+
+  }
+  .header{
+    color: #F8F8FF;
+    margin-top: 100px;
+  }
+
+  p{
+    font-size: xx-large;
+    font-weight: 200;
+    font-family: 'Montserrat', sans-serif;
+
+  }
