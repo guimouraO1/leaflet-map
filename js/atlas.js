@@ -17,18 +17,12 @@ function openSideNav() {
   (document.getElementById("panel").style.left = "0px"),
     (o._controlContainer.firstChild.style.transition = "0.8s"),
     (o._controlContainer.firstChild.style.left = "350px"),
-    f.state("close-options"),
-    (f.getContainer().style.visibility = "hidden"),
     (p = !0);
 }
 function closeSideNav() {
   (document.getElementById("panel").style.left = "-400px"),
     (o._controlContainer.firstChild.style.transition = "0.8s"),
     (o._controlContainer.firstChild.style.left = "0px"),
-    f.state("open-options"),
-    setTimeout(function () {
-      f.getContainer().style.visibility = "visible";
-    }, 300),
     (p = !1);
 }
 function getTiledLayer(selectedValue) {
@@ -60,6 +54,7 @@ function getTiledLayer(selectedValue) {
   layer = timeLayer.addTo(o);
   o.timeDimension.registerSyncedLayer(layer);
 }
+
 function createMap(dates) {
   o = L.map("map", {
     // crs: L.CRS.EPSG4326,
