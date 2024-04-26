@@ -27,7 +27,7 @@ function closeSideNav() {
 }
 function getTiledLayer(selectedValue) {
   var tiledLayer = L.tileLayer(
-    `./products/{d}/{h}{m}/${selectedValue}/{z}/{x}/{y}.png`,
+    `http://143.106.29.47:8080/{d}/{h}{m}/${selectedValue}/{z}/{x}/{y}.png`,
     {
       // crs: L.CRS.EPSG4326,
       tms: true,
@@ -95,6 +95,11 @@ function createMap(dates) {
     position: "topright",
   }).addTo(o);
 
+  L.simpleMapScreenshoter({
+    position: "topright",
+  }).addTo(o)
+
+
   L.easyButton({
     states: [
       {
@@ -145,9 +150,6 @@ function createMap(dates) {
             };
           },
         }).addTo(countriesLayer);
-
-        // Adiciona a camada diretamente como overlay ativado
-        map.addLayer(countriesLayer);
       });
 
     var brazil_states_url = "./shapefiles/brazil-states.geojson";
@@ -165,9 +167,6 @@ function createMap(dates) {
             };
           },
         }).addTo(statesLayer);
-
-        // Adiciona a camada diretamente como overlay ativado
-        map.addLayer(statesLayer);
       });
 
     var cartoLabels = L.tileLayer(

@@ -15,6 +15,7 @@
     "leaflet": "^1.9.4",
     "leaflet-control-geocoder": "^2.4.0",
     "leaflet-easybutton": "^2.4.0",
+    "leaflet-simple-map-screenshoter": "^0.5.0",
     "leaflet-timedimension": "^1.1.1",
     "moment": "^2.30.1"
   }
