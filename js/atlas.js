@@ -27,7 +27,7 @@ function closeSideNav() {
 }
 function getTiledLayer(selectedValue) {
   var tiledLayer = L.tileLayer(
-    `http://143.106.29.47:8080/{d}/{h}{m}/${selectedValue}/{z}/{x}/{y}.png`,
+    `http://143.106.227.94:4000/{d}/{h}{m}/${selectedValue}/{z}/{x}/{y}.png`,
     {
       // crs: L.CRS.EPSG4326,
       tms: true,
@@ -37,12 +37,13 @@ function getTiledLayer(selectedValue) {
       zoomAnimation: true,
       updateWhenIdle: true,
       updateWhenZooming: true,
+      keepBuffer: 8,
     }
   );
 
   var timeLayer = L.timeDimension.layer.tileLayer.goes(tiledLayer, {
-    cacheBackward: 2,
-    cacheForward: 2,
+    cacheBackward: 5,
+    cacheForward: 5,
   });
 
   // Remova a camada atual antes de adicionar a nova camada
@@ -66,24 +67,37 @@ function createMap(dates) {
     timeDimensionOptions: {
       times: dates,
     },
-    timeDimensionControl: true,
-    timeDimensionControlOptions: {
-      position: "topright",
-      // timeZones: ["UTC", "Local"],
-      autoPlay: false,
-      loopButton: false,
-      timeSteps: 1,
-      playReverseButton: false,
-      limitSliders: false,
-      playerOptions: {
-        transitionTime: 0,
-        loop: true,
-        buffer: 2,
-        minBufferReady: 1,
-        speed: 3,
-      },
-    },
   }).setView([-15, -60], 5);
+
+  L.Control.TimeDimensionCustom = L.Control.TimeDimension.extend({
+    _getDisplayDateFormat: function (e) {
+      t = this._getCurrentTimeZone();
+      return t === "UTC"
+        ? moment(e).utc().format("DD/MM/YYYY HH:mm UTC")
+        : t === "Local"
+        ? moment(e).format("DD/MM/YYYY HH:mm BRT")
+        : void 0;
+    },
+  });
+
+  new L.Control.TimeDimensionCustom({
+    position: "topright",
+    timeZones: ["UTC", "Local"],
+    autoPlay: false,
+    loopButton: false,
+    timeSteps: 1,
+    playReverseButton: false,
+    limitSliders: false,
+    minSpeed: 2,
+    maxSpeed: 7,
+    speedStep: 1,
+    playerOptions: {
+      transitionTime: 0,
+      loop: true,
+      buffer: 5,
+      minBufferReady: 1,
+    },
+  }).addTo(o);
 
   var defaut = document.getElementById("layerSelect").value;
   getTiledLayer(defaut);
@@ -97,8 +111,7 @@ function createMap(dates) {
 
   L.simpleMapScreenshoter({
     position: "topright",
-  }).addTo(o)
-
+  }).addTo(o);
 
   L.easyButton({
     states: [
@@ -209,13 +222,15 @@ function createMap(dates) {
     }).addTo(o);
   })();
 }
+
 function changeLayer() {
   var selectedValue = document.getElementById("layerSelect").value;
   getTiledLayer(selectedValue);
 }
+
 window.onload = function () {
   (function getDate() {
-    var date = "http://localhost:3000/date",
+    var date = "http://143.106.227.94:8008/dates/date.json",
       r = new XMLHttpRequest();
     r.open("GET", date);
     r.responseType = "json";
