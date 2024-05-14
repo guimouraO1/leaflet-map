@@ -1,242 +1,292 @@
-Date.prototype.format = function (e, a) {
-  return dateFormat(this, e, a);
-};
+// Variáveis globais
+var defaultBounds = [[-59.98897365428924, -5.026037385661109], [59.999999999999986, -139.99999999999997]],
+    defaultBoundsRegions = [[-59.98897365428924, -30.026037385661109], [50.999999999999986, -139.99999999999997]],
+    currentLayer = null,
+    menuButton;
 
-var bounds = [
-    [-59.98897365428924, -5.026037385661109],
-    [59.999999999999986, -139.99999999999997],
-  ],
-  boundsRegions = [
-    [-59.98897365428924, -30.026037385661109],
-    [50.999999999999986, -139.99999999999997],
-  ],
-  o,
-  layer = null;
-
+// Funções de controle do painel lateral
 function openSideNav() {
-  (document.getElementById("panel").style.left = "0px"),
-    (o._controlContainer.firstChild.style.transition = "0.8s"),
-    (o._controlContainer.firstChild.style.left = "350px"),
-    (p = !0);
+    document.getElementById("panel").style.left = "0px";
+    map._controlContainer.firstChild.style.transition = "0.8s";
+    map._controlContainer.firstChild.style.left = "350px";
+    menuButton.state("close-options");
+    menuButton.getContainer().style.visibility = "hidden";
 }
+
 function closeSideNav() {
-  (document.getElementById("panel").style.left = "-400px"),
-    (o._controlContainer.firstChild.style.transition = "0.8s"),
-    (o._controlContainer.firstChild.style.left = "0px"),
-    (p = !1);
+    document.getElementById("panel").style.left = "-400px";
+    map._controlContainer.firstChild.style.transition = "0.8s";
+    map._controlContainer.firstChild.style.left = "0px";
+    menuButton.state("open-options");
+    menuButton.getContainer().style.visibility = "visible";
 }
+
+// Função para obter camada de azulejos
 function getTiledLayer(selectedValue) {
-  var tiledLayer = L.tileLayer(
-    `http://143.106.227.94:4000/{d}/{h}{m}/${selectedValue}/{z}/{x}/{y}.png`,
-    {
-      // crs: L.CRS.EPSG4326,
-      tms: true,
-      attribution: "",
-      noWrap: true,
-      fadeAnimation: true,
-      zoomAnimation: true,
-      updateWhenIdle: true,
-      updateWhenZooming: true,
-      keepBuffer: 8,
-    }
-  );
-
-  var timeLayer = L.timeDimension.layer.tileLayer.goes(tiledLayer, {
-    cacheBackward: 5,
-    cacheForward: 5,
-  });
-
-  // Remova a camada atual antes de adicionar a nova camada
-  if (layer) {
-    o.timeDimension.unregisterSyncedLayer(layer);
-    o.removeLayer(layer);
-  }
-
-  layer = timeLayer.addTo(o);
-  o.timeDimension.registerSyncedLayer(layer);
-}
-
-function createMap(dates) {
-  o = L.map("map", {
-    // crs: L.CRS.EPSG4326,
-    minZoom: 4,
-    maxZoom: 7,
-    noWrap: true,
-    maxBounds: bounds,
-    timeDimension: true,
-    timeDimensionOptions: {
-      times: dates,
-    },
-  }).setView([-15, -60], 5);
-
-  L.Control.TimeDimensionCustom = L.Control.TimeDimension.extend({
-    _getDisplayDateFormat: function (e) {
-      t = this._getCurrentTimeZone();
-      return t === "UTC"
-        ? moment(e).utc().format("DD/MM/YYYY HH:mm UTC")
-        : t === "Local"
-        ? moment(e).format("DD/MM/YYYY HH:mm BRT")
-        : void 0;
-    },
-  });
-
-  new L.Control.TimeDimensionCustom({
-    position: "topright",
-    timeZones: ["UTC", "Local"],
-    autoPlay: false,
-    loopButton: false,
-    timeSteps: 1,
-    playReverseButton: false,
-    limitSliders: false,
-    minSpeed: 2,
-    maxSpeed: 7,
-    speedStep: 1,
-    playerOptions: {
-      transitionTime: 0,
-      loop: true,
-      buffer: 5,
-      minBufferReady: 1,
-    },
-  }).addTo(o);
-
-  var defaut = document.getElementById("layerSelect").value;
-  getTiledLayer(defaut);
-
-  L.Control.geocoder({
-    placeholder: "Pesquisar localização...",
-    errorMessage:
-      '<i class="fa fa-exclamation-circle" aria-hidden="true"></i> Localização não encontrada',
-    position: "topright",
-  }).addTo(o);
-
-  L.simpleMapScreenshoter({
-    position: "topright",
-  }).addTo(o);
-
-  L.easyButton({
-    states: [
-      {
-        stateName: "open-options",
-        icon: '<i id="menu-button" class="fa fa-bars" aria-hidden="true">',
-        title: "Acessar opções CEPAGRI",
-        onClick: function (e, a) {
-          openSideNav();
-        },
-      },
-      {
-        stateName: "close-options",
-        icon: '<i id="menu-button" class="fa fa-bars" aria-hidden="true">',
-        title: "Acessar opções CEPAGRI",
-        onClick: function (e, a) {
-          closeSideNav();
-        },
-      },
-    ],
-    position: "topleft",
-  }).addTo(o);
-
-  $("#close-menu-button").on("click", function () {
-    closeSideNav();
-  });
-
-  (function () {
-    o.createPane("references-pane");
-    o.getPane("references-pane").style.zIndex = 201;
-
-    var countriesLayer = L.layerGroup();
-    var statesLayer = L.layerGroup();
-
-    var political_countries_url =
-      "./shapefiles/ne_50m_admin_0_countries.geojson";
-    fetch(political_countries_url)
-      .then((response) => response.json())
-      .then((data) => {
-        L.geoJSON(data, {
-          style: function (feature) {
-            return {
-              fillColor: "gray",
-              weight: 1.2,
-              opacity: 1,
-              color: "White",
-              fillOpacity: 0,
-              maxBounds: boundsRegions,
-            };
-          },
-        }).addTo(countriesLayer);
-      });
-
-    var brazil_states_url = "./shapefiles/brazil-states.geojson";
-    fetch(brazil_states_url)
-      .then((response) => response.json())
-      .then((data) => {
-        L.geoJSON(data, {
-          style: function (feature) {
-            return {
-              fillColor: "green",
-              weight: 1.2,
-              opacity: 1,
-              color: "White",
-              fillOpacity: 0,
-            };
-          },
-        }).addTo(statesLayer);
-      });
-
-    var cartoLabels = L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",
-      {
-        attribution: "©OpenStreetMap, ©CartoDB",
-        bounds: boundsRegions,
-        pane: "references-pane",
-      }
+    var tiledLayer = L.tileLayer(
+        `http://143.106.227.94:4000/{d}/{h}{m}/${selectedValue}/{z}/{x}/{y}.png`, {
+            tms: true,
+            attribution: "",
+            noWrap: true,
+            fadeAnimation: true,
+            zoomAnimation: true,
+            updateWhenIdle: true,
+            updateWhenZooming: true,
+            keepBuffer: 8,
+        }
     );
-
-    var overlaymaps = {
-      Lugares: cartoLabels,
-      Fronteiras: countriesLayer,
-      Estados: statesLayer,
-    };
-
-    var layerControl = L.control.layers(null, overlaymaps, {
-      collapsed: false,
+    var timeLayer = L.timeDimension.layer.tileLayer.goes(tiledLayer, {
+        cacheBackward: 5,
+        cacheForward: 5,
     });
-    var stateLayerControl = false;
 
-    L.easyButton({
-      states: [
-        {
-          stateName: "open-options",
-          icon: '<i class="fa fa-map" aria-hidden="true"></i>',
-          title: "Acessar opções CEPAGRI",
-          onClick: function (e, a) {
-            stateLayerControl = !stateLayerControl;
-            if (stateLayerControl) {
-              layerControl.addTo(o);
-            } else {
-              o.removeControl(layerControl);
-            }
-          },
+    // Remova a camada atual antes de adicionar a nova camada
+    if (currentLayer) {
+        map.timeDimension.unregisterSyncedLayer(currentLayer);
+        map.removeLayer(currentLayer);
+    }
+
+    currentLayer = timeLayer.addTo(map);
+    map.timeDimension.registerSyncedLayer(currentLayer);
+}
+
+// Função para criar o mapa
+function createMap(dates) {
+    map = L.map("map", {
+        minZoom: 4,
+        maxZoom: 7,
+        noWrap: true,
+        maxBounds: defaultBounds,
+        timeDimension: true,
+        timeDimensionOptions: {
+            times: dates,
         },
-      ],
-      position: "topright",
-    }).addTo(o);
-  })();
+    }).setView([-15, -60], 5);
+
+    // Adicionar controle de dimensão do tempo
+    var timeDimensionControl = new L.Control.TimeDimensionCustom({
+        position: "topright",
+        timeZones: ["UTC", "Local"],
+        autoPlay: false,
+        loopButton: false,
+        timeSteps: 1,
+        playReverseButton: false,
+        limitSliders: false,
+        minSpeed: 2,
+        maxSpeed: 7,
+        speedStep: 1,
+        playerOptions: {
+            transitionTime: 0,
+            loop: true,
+            buffer: 5,
+            minBufferReady: 2,
+        },
+    });
+    timeDimensionControl.addTo(map);
+
+    // Selecionar camada de azulejos padrão
+    var defaultLayer = document.getElementById("layerSelect").value;
+    getTiledLayer(defaultLayer);
+
+    // Adicionar geocodificador
+    L.Control.geocoder({
+        placeholder: "Pesquisar localização...",
+        errorMessage: '<i class="fa fa-exclamation-circle" aria-hidden="true"></i> Localização não encontrada',
+        position: "topright",
+    }).addTo(map);
+
+    // Adicionar botão de print
+    L.simpleMapScreenshoter({
+        position: "topright",
+    }).addTo(map);
+
+    // Adicionar botão do menu
+    menuButton = L.easyButton({
+        states: [
+            {
+                stateName: "open-options",
+                icon: '<i id="menu-button" class="fa fa-bars" aria-hidden="true"></i>',
+                title: "Acessar opções CEPAGRI",
+                onClick: function (e, a) {
+                    openSideNav();
+                },
+            },
+            {
+                stateName: "close-options",
+                icon: '<i id="menu-button" class="fa fa-bars" aria-hidden="true"></i>',
+                title: "Acessar opções CEPAGRI",
+                onClick: function (e, a) {
+                    closeSideNav();
+                },
+            },
+        ],
+        position: "topleft",
+    }).addTo(map);
+
+    // Adicionar botão de localização do usuário
+    var userLocationButton = L.easyButton({
+        states: [
+            {
+                stateName: "find-user-location",
+                icon: '<i id="find-user-location-button" class="fa fa-map-marker" aria-hidden="true"></i>',
+                title: "Ir para minha localização",
+                onClick: function (e, a) {
+                    userLocationButton.state("searching-user-location");
+                    a.locate({
+                        setView: false,
+                        watch: false,
+                    });
+                },
+            },
+            {
+                stateName: "searching-user-location",
+                icon: '<i class="fa fa-spinner fa-spin fa-fw"></i>',
+                title: "Procurando sua localização...",
+                onClick: function (e, a) {},
+            },
+        ],
+        position: "topright",
+    }).addTo(map);
+
+    
+    // Tratar eventos de localização
+    map.on("locationfound", function (e) {
+        var userMarker = L.marker([e.latitude, e.longitude]).bindPopup("Sua localização", {
+            className: "style_popup",
+        });
+        map.addLayer(userMarker);
+        map.setView([e.latitude, e.longitude], 7);
+        userLocationButton.state("find-user-location");
+    });
+
+    map.on("locationerror", function (e) {
+        setTimeout(function () {
+            userLocationButton.state("find-user-location");
+            alert("Localização não encontrada");
+        }, 5000);
+    });
+
+    // Fechar o menu lateral ao clicar no botão
+    $("#close-menu-button").on("click", function () {
+        closeSideNav();
+    }); 
+
+    // Adicionar botão de camadas
+    (function () {
+        map.createPane("references-pane");
+        map.getPane("references-pane").style.zIndex = 201;
+
+        var countriesLayer = L.layerGroup();
+        var statesLayer = L.layerGroup();
+
+        // Carregar dados geopolíticos
+        fetch("./shapefiles/ne_50m_admin_0_countries.geojson")
+            .then((response) => response.json())
+            .then((data) => {
+                L.geoJSON(data, {
+                    style: function (feature) {
+                        return {
+                            fillColor: "gray",
+                            weight: 1.2,
+                            opacity: 1,
+                            color: "White",
+                            fillOpacity: 0,
+                            maxBounds: defaultBoundsRegions,
+                        };
+                    },
+                }).addTo(countriesLayer);
+            });
+
+        fetch("./shapefiles/brazil-states.geojson")
+            .then((response) => response.json())
+            .then((data) => {
+                L.geoJSON(data, {
+                    style: function (feature) {
+                        return {
+                            fillColor: "green",
+                            weight: 1.2,
+                            opacity: 1,
+                            color: "White",
+                            fillOpacity: 0,
+                        };
+                    },
+                }).addTo(statesLayer);
+            });
+
+        var cartoLabels = L.tileLayer(
+            "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png", {
+                attribution: "©OpenStreetMap, ©CartoDB",
+                bounds: defaultBoundsRegions,
+                pane: "references-pane",
+            }
+        );
+
+        var overlayMaps = {
+            Lugares: cartoLabels,
+            Fronteiras: countriesLayer,
+            Estados: statesLayer,
+        };
+
+        var layerControl = L.control.layers(null, overlayMaps, {
+            collapsed: false,
+        });
+        var stateLayerControl = false;
+
+        L.easyButton({
+            states: [
+                {
+                    stateName: "open-options",
+                    icon: '<i class="fa fa-map" aria-hidden="true"></i>',
+                    title: "Selecionar camadas",
+                    onClick: function (e, a) {
+                        stateLayerControl = !stateLayerControl;
+                        if (stateLayerControl) {
+                            layerControl.addTo(map);
+                        } else {
+                            map.removeControl(layerControl);
+                        }
+                    },
+                },
+            ],
+            position: "topright",
+        }).addTo(map);
+    })();
+
+    // Adicionar botão de informações
+    L.easyButton({
+      states: [{
+          icon: '<i id="about-button" class="fa fa-info-circle" aria-hidden="true"></i>',
+          title: "Sobre",
+          onClick: function(e, a) {
+              $("#about").modal("show");
+          }
+      }],
+      position: "topleft"
+    }).addTo(map);
+
+    // Fechar o modal de informações
+    $("#about-close").on("click", function() {
+        $("#about").modal("hide");
+        console.log("O botão Fechar foi clicado!");
+    });
 }
 
+// Função para mudar a camada
 function changeLayer() {
-  var selectedValue = document.getElementById("layerSelect").value;
-  getTiledLayer(selectedValue);
+    var selectedValue = document.getElementById("layerSelect").value;
+    getTiledLayer(selectedValue);
 }
 
+// Carregar o mapa quando a página é carregada
 window.onload = function () {
-  (function getDate() {
-    var date = "http://143.106.227.94:8008/dates/date.json",
-      r = new XMLHttpRequest();
-    r.open("GET", date);
-    r.responseType = "json";
-    r.send();
-    r.onload = function () {
-      createMap(r.response.dates);
-    };
-  })();
+    (function getDate() {
+        var dateUrl = "http://143.106.227.94:8008/dates/date.json";
+        var request = new XMLHttpRequest();
+        request.open("GET", dateUrl);
+        request.responseType = "json";
+        request.send();
+        request.onload = function () {
+            createMap(request.response.dates);
+        };
+    })();
 };
