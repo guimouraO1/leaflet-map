@@ -1,164 +1,135 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Labsat | Mapa</title>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no"
-    />
-    <link rel="icon" type="image/png" href="/images/icon.png" />
-    <link rel="stylesheet" href="styles.css" />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.0/dist/leaflet.timedimension.control.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-      crossorigin="anonymous"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
-    />
-  </head>
-  <body>
-    <div id="panel" class="side-nav p-4 m-0 border-0 bd-example m-0 border-0">
-      <span id="close-menu-button" class="closebtn"
-        ><i
-          class="fa fa-times"
-          style="transform: scale(1.2)"
-          aria-hidden="true"
-        ></i
-      ></span>
 
-      <div class="header">
-        <p>LABSAT</p>
-        <span>Visualização de Imagens</span>
-      </div>
+<head>
+  <title>Labsat | Mapa</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <link rel="icon" type="image/png" href="/images/icon.png" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.0/dist/leaflet.timedimension.control.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+</head>
 
-      <select class="form-select p-2" id="layerSelect" onchange="changeLayer()">
-        <option value="truecolor">Selecione um Produto</option>
-        <optgroup label="Produtos ABI 1-16">
-          <option value="ch01">Banda 01 - Visible (0.47 µm)</option>
-          <option value="ch02">Banda 02 - Visible (0.64 µm)</option>
-          <option value="ch03">Banda 03 - Near-IR (0.86 µm)</option>
-          <option value="ch04">Banda 04 - Near-IR (1.37 µm)</option>
-          <option value="ch05">Banda 05 - Near-IR (1.6 µm)</option>
-          <option value="ch06">Banda 06 - Near-IR (2.24 µm)</option>
-          <option value="ch07">Banda 07 - IR (3.9 µm)</option>
-          <option value="ch08">Banda 08 - IR (6.2 µm)</option>
-          <option value="ch09">Banda 09 - IR (6.9 µm)</option>
-          <option value="ch10">Banda 10 - IR (7.3 µm)</option>
-          <option value="ch11">Banda 11 - IR (8.4 µm)</option>
-          <option value="ch12">Banda 12 - IR (9.6 µm)</option>
-          <option value="ch13">Banda 13 - IR (10.3 µm)</option>
-          <option value="ch14">Banda 14 - IR (11.2 µm)</option>
-          <option value="ch15">Banda 15 - IR (12.3 µm)</option>
-          <option value="ch16">Banda 16 - IR (13.3 µm)</option>
-        </optgroup>
-        <optgroup label="Composições">
-          <option value="truecolor">True Color (Cor Verdadeira)</option>
-        </optgroup>
-      </select>
+<body>
+  <div id="panel" class="side-nav p-4 m-0 border-0 bd-example m-0 border-0">
+    <span id="close-menu-button" class="closebtn"><i class="fa fa-times" style="transform: scale(1.2)"
+        aria-hidden="true"></i></span>
+
+    <div class="header">
+      <p>LABSAT</p>
+      <span>Visualização de Imagens</span>
     </div>
 
-    <!-- Logo -->
-    <div class="logoPosition">
-      <img class="logo" src="./images/logos/CEPAGRI-Logo.png" alt="" />
-    </div>
+    <select class="form-select p-2" id="layerSelect" onchange="changeLayer()">
+      <option value="truecolor">Selecione um Produto</option>
+      <optgroup label="Produtos ABI 1-16">
+        <option value="ch01">Banda 01 - Visible (0.47 µm)</option>
+        <option value="ch02">Banda 02 - Visible (0.64 µm)</option>
+        <option value="ch03">Banda 03 - Near-IR (0.86 µm)</option>
+        <option value="ch04">Banda 04 - Near-IR (1.37 µm)</option>
+        <option value="ch05">Banda 05 - Near-IR (1.6 µm)</option>
+        <option value="ch06">Banda 06 - Near-IR (2.24 µm)</option>
+        <option value="ch07">Banda 07 - IR (3.9 µm)</option>
+        <option value="ch08">Banda 08 - IR (6.2 µm)</option>
+        <option value="ch09">Banda 09 - IR (6.9 µm)</option>
+        <option value="ch10">Banda 10 - IR (7.3 µm)</option>
+        <option value="ch11">Banda 11 - IR (8.4 µm)</option>
+        <option value="ch12">Banda 12 - IR (9.6 µm)</option>
+        <option value="ch13">Banda 13 - IR (10.3 µm)</option>
+        <option value="ch14">Banda 14 - IR (11.2 µm)</option>
+        <option value="ch15">Banda 15 - IR (12.3 µm)</option>
+        <option value="ch16">Banda 16 - IR (13.3 µm)</option>
+      </optgroup>
+      <optgroup label="Composições">
+        <option value="truecolor">True Color (Cor Verdadeira)</option>
+      </optgroup>
+    </select>
+  </div>
 
-      <!-- Modal About -->
-      <div class="modal fade about" id="about" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="aboutTitle">LABSAT - Versão: 0.0.1</h5>
-            </div>
-            <div class="modal-body">
-              <p><h6>Copyright © CEPAGRI</h6></p>
-              <p>Contato: guimoura@unicamp.br</p>
+  <!-- Logo -->
+  <div class="logoPosition">
+    <img class="logo" src="./images/logos/CEPAGRI-Logo.png" alt="" />
+  </div>
 
-                <hr/>
-                <div class="img-modal-about">
-                  <img height="80px" src="images/logos/CEPAGRI-Logo.png">
-                </div>
-              <hr/>
-              <p><a href="" target="_blank" rel="noreferrer">Centro de Pesquisas Meteorológicas e Climáticas Aplicadas à Agricultura </a><br>
-              <hr/>
-              <p><h6>Referência</h6></p>
-              <p>Aplicação para visualização interativa dos dados GOES-16</p>
-              <hr/>
-              <p><h6>Aviso Importante</h6></p>
-              <p>Algo sobre o LABSAT</p>
-              <hr/>
-              <p><h6>Contato: guimoura@unicamp.br</h6></p>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" id="about-close" data-dismiss="modal">Fechar</button>
-            </div>
+  <!-- Modal About -->
+  <div class="modal fade about" id="about" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="aboutTitle">LABSAT - Versão: 0.0.1</h5>
+        </div>
+        <div class="modal-body">
+          <p>
+          <h6>Copyright © CEPAGRI</h6>
+          </p>
+          <p>Contato: guimoura@unicamp.br</p>
+
+          <hr />
+          <p><a href="" target="_blank" rel="noreferrer">Centro de Pesquisas Meteorológicas e Climáticas Aplicadas à
+              Agricultura </a><br>
+            <hr />
+          <div class="img-modal-about">
+            <img height="80px" src="images/logos/CEPAGRI-Logo.png">
           </div>
+
+          <hr />
+          <p>
+          <h6>Referência</h6>
+          </p>
+          <p>Aplicação para visualização interativa dos dados GOES-16</p>
+          <hr />
+          <p>
+          <h6>Aviso Importante</h6>
+          </p>
+          <p>Algo sobre o LABSAT</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="about-close" data-dismiss="modal">Fechar</button>
         </div>
       </div>
-    <div id="map"></div>
-  </body>
+    </div>
+  </div>
+  <div id="map"></div>
+</body>
 
-  <!-- leaflet -->
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-  ></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-omnivore/0.3.4/leaflet-omnivore.min.js"></script>
-  <!-- Geocoder -->
-  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-  <!-- timedimension -->
-  <script
-    type="text/javascript"
-    src="https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"
-  ></script>
-  <script
-    type="text/javascript"
-    src="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"
-  ></script>
-  <!-- Moment -->
-  <!-- Moment.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/locale/pt-br.js"></script>
+<!-- leaflet -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-omnivore/0.3.4/leaflet-omnivore.min.js"></script>
+<!-- Geocoder -->
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+<!-- timedimension -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"></script>
+<script type="text/javascript"
+  src="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"></script>
+<!-- Moment -->
+<!-- Moment.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/locale/pt-br.js"></script>
 
-  <!-- Moment Timezone -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.31/moment-timezone-with-data.min.js"></script>
+<!-- Moment Timezone -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.31/moment-timezone-with-data.min.js"></script>
 
-  <!-- jquery -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="js/leaflet.timedimension.tilelayer.goes.min.js"></script>
-  <!-- bootstrap -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"
-  ></script>
-  <!-- easybutton -->
-  <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+<!-- jquery -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="js/leaflet.timedimension.tilelayer.goes.min.js"></script>
+<!-- bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<!-- easybutton -->
+<script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
 
-  <script src="https://unpkg.com/leaflet-simple-map-screenshoter"></script>
+<script src="https://unpkg.com/leaflet-simple-map-screenshoter"></script>
 
-  <!-- main code -->
-  <script src="./js/atlas.js"></script>
+<!-- main code -->
+<script src="./js/atlas.js"></script>
+
 </html>
