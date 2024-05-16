@@ -131,49 +131,49 @@ function createMap(dates) {
         position: "topleft",
     }).addTo(map);
 
-    // Adicionar botão de localização do usuário
+    // Botão para localização do usuário
     var userLocationButton = L.easyButton({
-        states: [
-            {
-                stateName: "find-user-location",
-                icon: '<i id="find-user-location-button" class="fa fa-map-marker" aria-hidden="true"></i>',
-                title: "Ir para minha localização",
-                onClick: function (e, a) {
-                    userLocationButton.state("searching-user-location");
-                    a.locate({
-                        setView: false,
-                        watch: false,
+        states: [{
+            stateName: "find-user-location",
+            icon: '<i id="find-user-location-button" class="fa fa-map-marker" aria-hidden="true"></i>',
+            title: "Ir para minha localização",
+            onClick: function (e, a) {
+                userLocationButton.state("searching-user-location");
+                
+                var timeout = setTimeout(function() {
+                    userLocationButton.state("find-user-location");
+                }, 10000);
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        clearTimeout(timeout);
+                        var { latitude, longitude } = position.coords;
+                        var userMarker = L.marker([latitude, longitude]).bindPopup("Sua localização", {
+                            className: "style_popup"
+                        });
+                        map.addLayer(userMarker);
+                        map.setView([latitude, longitude], 7);
+                        userLocationButton.state("find-user-location");
+                    }, function(error) {
+                        clearTimeout(timeout);
+                        console.log("Erro ao obter localização:", error.message);
+                        userLocationButton.state("find-user-location");
                     });
-                },
+                } else {
+                    clearTimeout(timeout);
+                    console.log("Geolocation is not supported by this browser.");
+                    userLocationButton.state("find-user-location");
+                }
             },
-            {
-                stateName: "searching-user-location",
-                icon: '<i class="fa fa-spinner fa-spin fa-fw"></i>',
-                title: "Procurando sua localização...",
-                onClick: function (e, a) {},
-            },
-        ],
+        }, {
+            stateName: "searching-user-location",
+            icon: '<i class="fa fa-spinner fa-spin fa-fw"></i>',
+            title: "Procurando sua localização...",
+            onClick: function (e, a) {},
+        }],
         position: "topright",
     }).addTo(map);
-
     
-    // Tratar eventos de localização
-    map.on("locationfound", function (e) {
-        var userMarker = L.marker([e.latitude, e.longitude]).bindPopup("Sua localização", {
-            className: "style_popup",
-        });
-        map.addLayer(userMarker);
-        map.setView([e.latitude, e.longitude], 7);
-        userLocationButton.state("find-user-location");
-    });
-
-    map.on("locationerror", function (e) {
-        setTimeout(function () {
-            userLocationButton.state("find-user-location");
-            alert("Localização não encontrada");
-        }, 5000);
-    });
-
     // Fechar o menu lateral ao clicar no botão
     $("#close-menu-button").on("click", function () {
         closeSideNav();
