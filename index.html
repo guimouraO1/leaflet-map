@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>CEPAGRI MAP</title>
+    <title>Labsat | Mapa</title>
     <meta charset="utf-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
-    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" type="image/png" href="/images/icon.png" />
     <link rel="stylesheet" href="styles.css" />
     <link
       rel="stylesheet"
@@ -49,31 +49,32 @@
       ></span>
 
       <div class="header">
-        <p>Cepagri Map</p>
+        <p>LABSAT</p>
+        <span>Visualização de Imagens</span>
       </div>
 
       <select class="form-select p-2" id="layerSelect" onchange="changeLayer()">
-        <option value="truecolor">Select Product</option>
-        <optgroup label="Product bands 1-16">
-          <option value="ch01">Band 01</option>
-          <option value="ch02">Band 02</option>
-          <option value="ch03">Band 03</option>
-          <option value="ch04">Band 04</option>
-          <option value="ch05">Band 05</option>
-          <option value="ch06">Band 06</option>
-          <option value="ch07">Band 07</option>
-          <option value="ch08">Band 08</option>
-          <option value="ch09">Band 09</option>
-          <option value="ch10">Band 10</option>
-          <option value="ch11">Band 11</option>
-          <option value="ch12">Band 12</option>
-          <option value="ch13">Band 13</option>
-          <option value="ch14">Band 14</option>
-          <option value="ch15">Band 15</option>
-          <option value="ch16">Band 16</option>
+        <option value="truecolor">Selecione um Produto</option>
+        <optgroup label="Produtos ABI 1-16">
+          <option value="ch01">Banda 01 - Visible (0.47 µm)</option>
+          <option value="ch02">Banda 02 - Visible (0.64 µm)</option>
+          <option value="ch03">Banda 03 - Near-IR (0.86 µm)</option>
+          <option value="ch04">Banda 04 - Near-IR (1.37 µm)</option>
+          <option value="ch05">Banda 05 - Near-IR (1.6 µm)</option>
+          <option value="ch06">Banda 06 - Near-IR (2.24 µm)</option>
+          <option value="ch07">Banda 07 - IR (3.9 µm)</option>
+          <option value="ch08">Banda 08 - IR (6.2 µm)</option>
+          <option value="ch09">Banda 09 - IR (6.9 µm)</option>
+          <option value="ch10">Banda 10 - IR (7.3 µm)</option>
+          <option value="ch11">Banda 11 - IR (8.4 µm)</option>
+          <option value="ch12">Banda 12 - IR (9.6 µm)</option>
+          <option value="ch13">Banda 13 - IR (10.3 µm)</option>
+          <option value="ch14">Banda 14 - IR (11.2 µm)</option>
+          <option value="ch15">Banda 15 - IR (12.3 µm)</option>
+          <option value="ch16">Banda 16 - IR (13.3 µm)</option>
         </optgroup>
-        <optgroup label="RGBs">
-          <option value="truecolor">True Color</option>
+        <optgroup label="Composições">
+          <option value="truecolor">True Color (Cor Verdadeira)</option>
         </optgroup>
       </select>
     </div>
@@ -100,7 +101,7 @@
               <p><a href="" target="_blank" rel="noreferrer">Centro de Pesquisas Meteorológicas e Climáticas Aplicadas à Agricultura </a><br>
               <hr/>
               <p><h6>Referência</h6></p>
-              <p>Aplicação para visualização interativa dos dados GOES-16.</p>
+              <p>Aplicação para visualização interativa dos dados GOES-16</p>
               <hr/>
               <p><h6>Aviso Importante</h6></p>
               <p>Algo sobre o LABSAT</p>
@@ -115,7 +116,7 @@
       </div>
     <div id="map"></div>
   </body>
-  
+
   <!-- leaflet -->
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
