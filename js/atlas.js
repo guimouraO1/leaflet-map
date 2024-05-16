@@ -53,7 +53,7 @@ function getTiledLayer(selectedValue) {
 // Função para criar o mapa
 function createMap(dates) {
     map = L.map("map", {
-        minZoom: 4,
+        minZoom: 5,
         maxZoom: 7,
         noWrap: true,
         maxBounds: defaultBounds,
@@ -98,8 +98,16 @@ function createMap(dates) {
     // Adicionar botão de print
     L.simpleMapScreenshoter({
         position: "topright",
+        screenName: function () {
+            return moment.utc(map.timeDimension.getCurrentTime()).format("DD_MM_YYYY_HH:mm") + "_UTC_CEPAGRI"
+        }
     }).addTo(map);
 
+    // Para o player do timedimension para tirar a foto
+    map.on('simpleMapScreenshoter.takeScreen', function () {
+        timeDimensionControl._player.stop()
+    })
+   
     // Adicionar botão do menu
     menuButton = L.easyButton({
         states: [

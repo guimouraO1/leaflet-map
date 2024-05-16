@@ -77,12 +77,13 @@
         </optgroup>
       </select>
     </div>
+
     <!-- Logo -->
     <div class="logoPosition">
       <img class="logo" src="./images/logos/CEPAGRI-Logo.png" alt="" />
     </div>
 
-      <!-- Modal (About) -->
+      <!-- Modal About -->
       <div class="modal fade about" id="about" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
           <div class="modal-content">
@@ -91,21 +92,20 @@
             </div>
             <div class="modal-body">
               <p><h6>Copyright © CEPAGRI</h6>
+                <hr/>
                 <div class="img-modal-about">
                   <img height="80px" src="images/logos/CEPAGRI-Logo.png">
                 </div>
               <hr/>
-              <p><h6>Contato: guimoura@unicamp.br</h6></p>
-              <hr/>
               <p><a href="" target="_blank" rel="noreferrer">Centro de Pesquisas Meteorológicas e Climáticas Aplicadas à Agricultura </a><br>
-              <hr/>
-
               <hr/>
               <p><h6>Referência</h6></p>
               <p>Aplicação para visualização interativa dos dados GOES-16.</p>
               <hr/>
               <p><h6>Aviso Importante</h6></p>
               <p>Algo sobre o LABSAT</p>
+              <hr/>
+              <p><h6>Contato: guimoura@unicamp.br</h6></p>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" id="about-close" data-dismiss="modal">Fechar</button>
@@ -113,11 +113,9 @@
           </div>
         </div>
       </div>
-
-
-
     <div id="map"></div>
   </body>
+  
   <!-- leaflet -->
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
