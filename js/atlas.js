@@ -54,7 +54,7 @@ function getTiledLayer(selectedValue) {
 function createMap(dates) {
     map = L.map("map", {
         minZoom: 5,
-        maxZoom: 7,
+        maxZoom: 6,
         noWrap: true,
         maxBounds: defaultBounds,
         timeDimension: true,
@@ -281,14 +281,32 @@ function createMap(dates) {
 
 // Função para mudar a camada
 function changeLayer() {
-    var selectedValue = document.getElementById("layerSelect").value;
+    const selectedValue = document.getElementById("layerSelect").value;
+    const baseUrl = 'http://143.106.227.94:8008/dates/';
+
+   
+    const dateUrl = selectedValue !== 'truecolor' ? `${baseUrl}date_${selectedValue}.json` : `${baseUrl}date_ch17.json`;
+
+    const request = new XMLHttpRequest();
+    request.open("GET", dateUrl);
+    request.responseType = "json";
+    request.send();
+
+    request.onload = function () {
+        const dates = request.response.dates;
+        map.timeDimension.setAvailableTimes(dates, 'replace');
+        const lastDate = new Date(dates[dates.length - 1]).getTime();
+        map.timeDimension.setCurrentTime(lastDate);
+    };
+
     getTiledLayer(selectedValue);
 }
+
 
 // Carregar o mapa quando a página é carregada
 window.onload = function () {
     (function getDate() {
-        var dateUrl = "http://143.106.227.94:8008/dates/date.json";
+        var dateUrl = "http://143.106.227.94:8008/dates/date_ch17.json";
         var request = new XMLHttpRequest();
         request.open("GET", dateUrl);
         request.responseType = "json";
