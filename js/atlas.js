@@ -6,7 +6,7 @@ var defaultBounds = [[-59.98897365428924, -5.026037385661109], [59.9999999999999
 
 // Funções de controle do painel lateral
 function openSideNav() {
-    document.getElementById("panel").style.left = "0px";
+    document.getElementById("side-nav").style.left = "0px";
     map._controlContainer.firstChild.style.transition = "0.8s";
     map._controlContainer.firstChild.style.left = "350px";
     menuButton.state("close-options");
@@ -14,7 +14,7 @@ function openSideNav() {
 }
 
 function closeSideNav() {
-    document.getElementById("panel").style.left = "-400px";
+    document.getElementById("side-nav").style.left = "-400px";
     map._controlContainer.firstChild.style.transition = "0.8s";
     map._controlContainer.firstChild.style.left = "0px";
     menuButton.state("open-options");
@@ -31,13 +31,12 @@ function getTiledLayer(selectedValue) {
             fadeAnimation: true,
             zoomAnimation: true,
             updateWhenIdle: true,
-            updateWhenZooming: true,
-            keepBuffer: 8,
-        }
+            updateWhenZooming: true
+       }
     );
     var timeLayer = L.timeDimension.layer.tileLayer.goes(tiledLayer, {
-        cacheBackward: 5,
-        cacheForward: 5,
+        cacheBackward: 8,
+        cacheForward: 8,
     });
 
     // Remova a camada atual antes de adicionar a nova camada
@@ -75,11 +74,13 @@ function createMap(dates) {
         minSpeed: 2,
         maxSpeed: 7,
         speedStep: 1,
+        timeSliderDragUpdate: true,
         playerOptions: {
             transitionTime: 0,
             loop: true,
-            buffer: 5,
-            minBufferReady: 2,
+            buffer: 6,
+            minBufferReady: 4,
+            startOver: true,
         },
     });
     timeDimensionControl.addTo(map);
@@ -107,7 +108,14 @@ function createMap(dates) {
     map.on('simpleMapScreenshoter.takeScreen', function () {
         timeDimensionControl._player.stop()
     })
-   
+
+    // Garante que a data é atualizada quando trocar de data pelo timedimension
+    map.timeDimension.on('timeloading', function() {
+        var currentTime = map.timeDimension.getCurrentTime();
+        var currentMoment = moment.utc(currentTime);
+        $("#datetimepicker1").datetimepicker('date', currentMoment);
+    });
+
     // Adicionar botão do menu
     menuButton = L.easyButton({
         states: [
@@ -177,7 +185,29 @@ function createMap(dates) {
     // Fechar o menu lateral ao clicar no botão
     $("#close-menu-button").on("click", function () {
         closeSideNav();
-    }); 
+    });
+
+    // Datetimepicker
+    (function () {
+        var date = moment.utc(dates[dates.length - 1], "YYYYMMDDHHmm");
+        var firstDate = moment.utc(dates[0], "YYYYMMDDHHmm");
+
+        $("#datetimepicker1").datetimepicker({
+            format: "DD/MM/YYYY HH:mm",
+            stepping: 20,
+            minDate: moment.utc(firstDate),
+            maxDate: moment.utc(date),
+            date: moment.utc(date),
+            keepOpen: false            
+        }),
+        
+        $("#datetimepicker1").on("change.datetimepicker", (function(o) {
+            var dateNow = moment.utc(o.date);
+            dateNow.add(20, 'minutes'); 
+            map.timeDimension.setCurrentTime(dateNow.toISOString()); 
+        }));
+        
+    })();
 
     // Adicionar botão de camadas
     (function () {
