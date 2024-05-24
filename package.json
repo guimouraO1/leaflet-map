@@ -1,13 +1,13 @@
 {
-  "name": "leaflet-map",
+  "name": "labsat",
   "version": "1.0.0",
   "description": "",
   "main": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "guimoura@unicamp.br",
+  "license": "MIT",
   "dependencies": {
     "bootstrap": "^5.3.3",
     "fa-icons": "^0.2.0",

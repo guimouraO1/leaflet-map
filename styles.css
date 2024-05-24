@@ -100,3 +100,8 @@ body {
   width: 100% !important;
 
 }
+
+.me-auto{
+  color: red;
+  margin-left: 10px;
+}
