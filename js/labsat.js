@@ -1,4 +1,3 @@
-// Variáveis globais
 var defaultBounds = [
     [-59.98897365428924, -5.026037385661109],
     [59.999999999999986, -139.99999999999997],
@@ -12,7 +11,6 @@ var defaultBounds = [
   toastLiveExample = document.getElementById("liveToast"),
   toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
 
-// Funções de controle do painel lateral
 function openSideNav() {
   document.getElementById("side-nav").style.left = "0px";
   map._controlContainer.firstChild.style.transition = "0.8s";
@@ -89,9 +87,10 @@ function datepickerT(dates) {
       $("#mensagemToast").text(
         `Data: ${moment(o.date).format(
           "YYYY/MM/DD HH:mm"
-        )} UTC não está disponível`
+        )} UTC indisponível`
       );
       $("#alertToast").text("Alerta");
+      $("#iconToast").addClass("fa fa-exclamation-triangle").css("color", "#AA0000");
       toastBootstrap.show();
     }
   });
@@ -360,7 +359,6 @@ function createMap(dates) {
   });
 }
 
-// Função para mudar a camada
 function changeLayer() {
   const selectedValue = document.getElementById("layerSelect").value;
   const baseUrl = "http://143.106.227.94:8008/dates/";
@@ -386,7 +384,6 @@ function changeLayer() {
   getTiledLayer(selectedValue);
 }
 
-// Carregar o mapa quando a página é carregada
 window.onload = function () {
   (function getDate() {
     var dateUrl = "http://143.106.227.94:8008/dates/date_ch17.json";
@@ -396,6 +393,11 @@ window.onload = function () {
     request.send();
     request.onload = function () {
       createMap(request.response.dates);
+      
+      $("#mensagemToast").text("Bem vindo(a) ao Labsat!");
+      $("#alertToast").text("LABSAT")
+      $("#iconToast").addClass("fa fa-check").css("color", "#0e4c66");
+      toastBootstrap.show();
     };
   })();
 };
