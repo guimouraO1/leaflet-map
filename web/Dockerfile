@@ -1,4 +1,4 @@
-FROM node:latest AS build
+FROM node:latest
 
 WORKDIR /usr/src/app
 
@@ -8,6 +8,9 @@ RUN npm install
 COPY . .
 
 FROM nginx
-COPY --from=build /usr/src/app/build /usr/share/nginx/html
+
+WORKDIR /usr/share/nginx/html
+
+COPY . .
 COPY ./conf/nginx.conf /etc/nginx/nginx.conf
 # COPY ./conf/default.conf /etc/nginx/conf.d/default.conf
