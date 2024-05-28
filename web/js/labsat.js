@@ -7,6 +7,8 @@ const defaultBoundsRegions = [
     [50.999999999999986, -139.99999999999997],
 ];
 
+let map;
+let timeDimensionControl;
 let currentLayer = null;
 let menuButton;
 let defaultLayer;
@@ -89,7 +91,7 @@ function setupDatePicker(dates) {
 }
 
 function createMap(dates) {
-  var map = L.map("map", {
+  map = L.map("map", {
     minZoom: 5,
     maxZoom: 6,
     noWrap: true,
@@ -101,7 +103,7 @@ function createMap(dates) {
   }).setView([-15, -60], 5);
 
   // Adicionar controle de dimensão do tempo
-  var timeDimensionControl = new L.Control.TimeDimensionCustom({
+  timeDimensionControl = new L.Control.TimeDimensionCustom({
     position: "topright",
     timeZones: ["UTC", "Local"],
     autoPlay: false,
