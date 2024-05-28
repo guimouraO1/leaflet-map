@@ -9,6 +9,8 @@ const defaultBoundsRegions = [
 
 let currentLayer = null;
 let menuButton;
+let defaultLayer;
+let userLocationButton;
 
 const toastLiveExample = document.getElementById("liveToast");
 const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
@@ -87,7 +89,7 @@ function setupDatePicker(dates) {
 }
 
 function createMap(dates) {
-  map = L.map("map", {
+  var map = L.map("map", {
     minZoom: 5,
     maxZoom: 6,
     noWrap: true,
@@ -99,7 +101,7 @@ function createMap(dates) {
   }).setView([-15, -60], 5);
 
   // Adicionar controle de dimensão do tempo
-  timeDimensionControl = new L.Control.TimeDimensionCustom({
+  var timeDimensionControl = new L.Control.TimeDimensionCustom({
     position: "topright",
     timeZones: ["UTC", "Local"],
     autoPlay: false,
@@ -122,9 +124,9 @@ function createMap(dates) {
 
   // Selecionar camada de azulejos padrão
   if (!localStorage.getItem("product")) {
-    var defaultLayer = document.getElementById("layerSelect").value;
+    defaultLayer = document.getElementById("layerSelect").value;
   } else {
-    var defaultLayer = localStorage.getItem("product");
+    defaultLayer = localStorage.getItem("product");
   }
 
   // Adicionando Tiles goes
@@ -183,7 +185,7 @@ function createMap(dates) {
   }).addTo(map);
 
   // Botão para localização do usuário
-  var userLocationButton = L.easyButton({
+  userLocationButton = L.easyButton({
     states: [
       {
         stateName: "find-user-location",
@@ -192,7 +194,7 @@ function createMap(dates) {
         onClick: function (e, a) {
           userLocationButton.state("searching-user-location");
 
-          var timeout = setTimeout(function () {
+          let timeout = setTimeout(function () {
             userLocationButton.state("find-user-location");
           }, 10000);
 
@@ -200,8 +202,8 @@ function createMap(dates) {
             navigator.geolocation.getCurrentPosition(
               function (position) {
                 clearTimeout(timeout);
-                var { latitude, longitude } = position.coords;
-                var userMarker = L.marker([latitude, longitude]).bindPopup(
+                let { latitude, longitude } = position.coords;
+                let userMarker = L.marker([latitude, longitude]).bindPopup(
                   "Sua localização",
                   {
                     className: "style_popup",
@@ -247,8 +249,8 @@ function createMap(dates) {
     map.createPane("references-pane");
     map.getPane("references-pane").style.zIndex = 201;
 
-    var countriesLayer = L.layerGroup();
-    var statesLayer = L.layerGroup();
+    let countriesLayer = L.layerGroup();
+    let statesLayer = L.layerGroup();
 
     // Carregar dados geopolíticos
     fetch("./shapefiles/ne_50m_admin_0_countries.geojson")
@@ -284,7 +286,7 @@ function createMap(dates) {
         }).addTo(statesLayer);
       });
 
-    var cartoLabels = L.tileLayer(
+    let cartoLabels = L.tileLayer(
       "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",
       {
         attribution: "",
@@ -293,7 +295,7 @@ function createMap(dates) {
       }
     );
 
-    var overlayMaps = {
+    let overlayMaps = {
       Lugares: cartoLabels,
       Fronteiras: countriesLayer,
       Estados: statesLayer,
@@ -303,11 +305,11 @@ function createMap(dates) {
     map.addLayer(countriesLayer);
     map.addLayer(statesLayer);
 
-    var layerControl = L.control.layers(null, overlayMaps, {
+    let layerControl = L.control.layers(null, overlayMaps, {
       collapsed: false,
     });
 
-    var stateLayerControl = false;
+    let stateLayerControl = false;
 
     L.easyButton({
       states: [
@@ -350,25 +352,24 @@ function createMap(dates) {
 }
 
 function changeLayer() {
-  const selectedValue = document.getElementById("layerSelect").value;
+  let selectedValue = document.getElementById("layerSelect").value;
 
   localStorage.setItem("product", selectedValue);
 
-  const baseUrl = "http://143.106.227.94:8008/dates/";
+  let baseUrl = "http://143.106.227.94:8008/dates/";
 
-  const dateUrl =
+  let dateUrl =
     selectedValue !== "truecolor"
       ? `${baseUrl}date_${selectedValue}.json`
       : `${baseUrl}date_ch17.json`;
 
-  const request = new XMLHttpRequest();
+  let request = new XMLHttpRequest();
   request.open("GET", dateUrl);
   request.responseType = "json";
   request.send();
 
   request.onload = function () {
-    const dates = request.response.dates;
-    map.timeDimension.setAvailableTimes(dates, "replace");
+    map.timeDimension.setAvailableTimes(request.response.dates, "replace");
     const lastDate = new Date(dates[dates.length - 1]).getTime();
     map.timeDimension.setCurrentTime(lastDate);
     setupDatePicker(dates);
@@ -389,8 +390,8 @@ function toastFirtTime() {
 
 window.onload = function () {
   (function getDate() {
-    var dateUrl = "http://143.106.227.94:8008/dates/date_ch17.json";
-    var request = new XMLHttpRequest();
+    let dateUrl = "http://143.106.227.94:8008/dates/date_ch17.json";
+    let request = new XMLHttpRequest();
     request.open("GET", dateUrl);
     request.responseType = "json";
     request.send();
