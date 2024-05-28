@@ -1,15 +1,17 @@
-var defaultBounds = [
+const defaultBounds = [
     [-59.98897365428924, -5.026037385661109],
     [59.999999999999986, -139.99999999999997],
-  ],
-  defaultBoundsRegions = [
+];
+const defaultBoundsRegions = [
     [-59.98897365428924, -30.026037385661109],
     [50.999999999999986, -139.99999999999997],
-  ],
-  currentLayer = null,
-  menuButton,
-  toastLiveExample = document.getElementById("liveToast"),
-  toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
+];
+
+let currentLayer = null;
+let menuButton;
+
+const toastLiveExample = document.getElementById("liveToast");
+const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
 
 function openSideNav() {
   document.getElementById("side-nav").style.left = "0px";
@@ -28,72 +30,60 @@ function closeSideNav() {
 }
 
 function getTiledLayer(selectedValue) {
-  var tiledLayer = L.tileLayer(
-    `http://143.106.227.94:4000/{d}/{h}{m}/${selectedValue}/{z}/{x}/{y}.png`,
-    {
-      tms: true,
-      attribution: "",
-      noWrap: true,
-      fadeAnimation: true,
-      zoomAnimation: true,
-      updateWhenIdle: true,
-      updateWhenZooming: true,
+    const tiledLayer = L.tileLayer(
+        `http://143.106.227.94:4000/{d}/{h}{m}/${selectedValue}/{z}/{x}/{y}.png`, {
+            tms: true,
+            attribution: "",
+            noWrap: true,
+            fadeAnimation: true,
+            zoomAnimation: true,
+            updateWhenIdle: true,
+            updateWhenZooming: true,
+        }
+    );
+    const timeLayer = L.timeDimension.layer.tileLayer.goes(tiledLayer, {
+        cacheBackward: 8,
+        cacheForward: 8,
+    });
+
+    if (currentLayer) {
+        map.timeDimension.unregisterSyncedLayer(currentLayer);
+        map.removeLayer(currentLayer);
     }
-  );
-  var timeLayer = L.timeDimension.layer.tileLayer.goes(tiledLayer, {
-    cacheBackward: 8,
-    cacheForward: 8,
-  });
 
-  // Remova a camada atual antes de adicionar a nova camada
-  if (currentLayer) {
-    map.timeDimension.unregisterSyncedLayer(currentLayer);
-    map.removeLayer(currentLayer);
-  }
-
-  currentLayer = timeLayer.addTo(map);
-  map.timeDimension.registerSyncedLayer(currentLayer);
+    currentLayer = timeLayer.addTo(map);
+    map.timeDimension.registerSyncedLayer(currentLayer);
 }
 
-function datepickerT(dates) {
-  var date = moment(dates[dates.length - 1], "YYYYMMDDHHmm");
-  var firstDate = moment(dates[0], "YYYYMMDDHHmm");
+function setupDatePicker(dates) {
+    const lastDate = moment(dates[dates.length - 1], "YYYYMMDDHHmm");
+    const firstDate = moment(dates[0], "YYYYMMDDHHmm");
 
-  console.log(date.format("YYYY-MM-DD HH:mm"));
-  $("#datetimepicker1").datetimepicker({
-    format: "DD/MM/YYYY HH:mm",
-    stepping: 10,
-    minDate: firstDate,
-    maxDate: date,
-    date: date,
-    keepOpen: false,
-    timeZone: "UTC",
-  });
-
-  $("#datetimepicker1").on("change.datetimepicker", function (o) {
-    dateTempus = o.date.toDate();
-
-    var dateExists = dates.some((element) => {
-      return (
-        moment.utc(element).format("YYYY-MM-DD HH:mm") ===
-        moment(o.date).format("YYYY-MM-DD HH:mm")
-      );
+    $("#datetimepicker1").datetimepicker({
+        format: "DD/MM/YYYY HH:mm UTC",
+        stepping: 10,
+        minDate: firstDate,
+        maxDate: lastDate,
+        date: lastDate,
+        keepOpen: false,
+        timeZone: "UTC",
     });
-    if (dateExists) {
-      map.timeDimension.setCurrentTime(
-        moment(dateTempus).subtract({ hours: 2, minutes: 50 }).toISOString()
-      );
-    } else {
-      $("#mensagemToast").text(
-        `Data: ${moment(o.date).format(
-          "YYYY/MM/DD HH:mm"
-        )} UTC indisponível`
-      );
-      $("#alertToast").text("Alerta");
-      $("#iconToast").addClass("fa fa-exclamation-triangle").css("color", "#AA0000");
-      toastBootstrap.show();
-    }
-  });
+
+    $("#datetimepicker1").on("change.datetimepicker", function (event) {
+        const selectedDate = event.date.toDate();
+        const dateExists = dates.some(date =>
+            moment.utc(date).format("YYYY-MM-DD HH:mm") === moment(event.date).format("YYYY-MM-DD HH:mm")
+        );
+
+        if (dateExists) {
+            map.timeDimension.setCurrentTime(moment(selectedDate).subtract({ hours: 2, minutes: 50 }).toISOString());
+        } else {
+            $("#mensagemToast").text(`Data: ${moment(event.date).format("YYYY/MM/DD HH:mm")} UTC indisponível`);
+            $("#alertToast").text("Alerta");
+            $("#iconToast").addClass("fa fa-exclamation-triangle").css("color", "#AA0000");
+            toastBootstrap.show();
+        }
+    });
 }
 
 function createMap(dates) {
@@ -109,7 +99,7 @@ function createMap(dates) {
   }).setView([-15, -60], 5);
 
   // Adicionar controle de dimensão do tempo
-  var timeDimensionControl = new L.Control.TimeDimensionCustom({
+  timeDimensionControl = new L.Control.TimeDimensionCustom({
     position: "topright",
     timeZones: ["UTC", "Local"],
     autoPlay: false,
@@ -124,15 +114,20 @@ function createMap(dates) {
     playerOptions: {
       transitionTime: 0,
       loop: true,
-      buffer: 6,
-      minBufferReady: 4,
+      buffer: 8,
+      minBufferReady: 5,
       startOver: true,
     },
-  });
-  timeDimensionControl.addTo(map);
+  }).addTo(map);
 
   // Selecionar camada de azulejos padrão
-  var defaultLayer = document.getElementById("layerSelect").value;
+  if (!localStorage.getItem("product")) {
+    var defaultLayer = document.getElementById("layerSelect").value;
+  } else {
+    var defaultLayer = localStorage.getItem("product");
+  }
+
+  // Adicionando Tiles goes
   getTiledLayer(defaultLayer);
 
   // Adicionar geocodificador
@@ -158,21 +153,11 @@ function createMap(dates) {
   // Para o player do timedimension para tirar a foto
   map.on("simpleMapScreenshoter.takeScreen", function () {
     timeDimensionControl._player.stop();
+    $("#mensagemToast").text("Carregando sua imagem. Isso pode levar alguns instantes.");
+    $("#alertToast").text("Processando...");
+    $("#iconToast").addClass("fa fa-spinner fa-spin fa-fw").css("color", "#0e4c66");
+    toastBootstrap.show();
   });
-
-  //   map.timeDimension.on("timeloading", function () {
-  //     var currentTime = map.timeDimension.getCurrentTime();
-  //     var currentTimeISO = moment.utc(currentTime).toISOString();
-
-  //     // Verifica se a data atual está no array dates
-  //     var dateExists = dates.some(function (element) {
-  //       return moment.utc(element).toISOString() === currentTimeISO;
-  //     });
-
-  //     if (dateExists) {
-  //       $("#datetimepicker1").datetimepicker("date", moment.utc(currentTime));
-  //     }
-  //   });
 
   // Adicionar botão do menu
   menuButton = L.easyButton({
@@ -255,7 +240,7 @@ function createMap(dates) {
   });
 
   // Datetimepicker
-  datepickerT(dates);
+  setupDatePicker(dates);
 
   // Adicionar botão de camadas
   (function () {
@@ -302,7 +287,7 @@ function createMap(dates) {
     var cartoLabels = L.tileLayer(
       "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",
       {
-        attribution: "©OpenStreetMap, ©CartoDB",
+        attribution: "",
         bounds: defaultBoundsRegions,
         pane: "references-pane",
       }
@@ -314,9 +299,14 @@ function createMap(dates) {
       Estados: statesLayer,
     };
 
+    map.addLayer(cartoLabels);
+    map.addLayer(countriesLayer);
+    map.addLayer(statesLayer);
+
     var layerControl = L.control.layers(null, overlayMaps, {
       collapsed: false,
     });
+
     var stateLayerControl = false;
 
     L.easyButton({
@@ -361,6 +351,9 @@ function createMap(dates) {
 
 function changeLayer() {
   const selectedValue = document.getElementById("layerSelect").value;
+
+  localStorage.setItem("product", selectedValue);
+
   const baseUrl = "http://143.106.227.94:8008/dates/";
 
   const dateUrl =
@@ -378,10 +371,20 @@ function changeLayer() {
     map.timeDimension.setAvailableTimes(dates, "replace");
     const lastDate = new Date(dates[dates.length - 1]).getTime();
     map.timeDimension.setCurrentTime(lastDate);
-    datepickerT(dates);
+    setupDatePicker(dates);
   };
 
   getTiledLayer(selectedValue);
+}
+
+function toastFirtTime() {
+  if (localStorage.getItem("firstTime")) return;
+  localStorage.setItem("firstTime", true);
+
+  $("#mensagemToast").text("Bem vindo(a) ao Labsat!");
+  $("#alertToast").text("LABSAT");
+  $("#iconToast").addClass("fa fa-check").css("color", "#0e4c66");
+  toastBootstrap.show();
 }
 
 window.onload = function () {
@@ -393,11 +396,8 @@ window.onload = function () {
     request.send();
     request.onload = function () {
       createMap(request.response.dates);
-      
-      $("#mensagemToast").text("Bem vindo(a) ao Labsat!");
-      $("#alertToast").text("LABSAT")
-      $("#iconToast").addClass("fa fa-check").css("color", "#0e4c66");
-      toastBootstrap.show();
+      toastFirtTime();
     };
   })();
 };
+

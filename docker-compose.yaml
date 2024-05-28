@@ -1,0 +1,18 @@
+services:
+  nginx-web:
+    build: ./web
+    ports:
+      - '8008:80'
+    volumes:
+      - ./web:/usr/share/nginx/html
+      - /etc/ssl/labsat.cpa.unicamp.br.pem:/etc/nginx/ssl/labsat.cpa.unicamp.br.pem
+      - /etc/ssl/private/labsat.cpa.unicamp.br.key:/etc/nginx/ssl/labsat.cpa.unicamp.br.key
+      - /var/products:/products
+      - /dates:/usr/share/nginx/html/dates
+
+  nginx-tiles:
+    build: ./nginx
+    ports:
+      - '4000:80'
+    volumes:
+      - /var/products:/usr/share/nginx/html:ro
