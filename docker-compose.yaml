@@ -10,9 +10,9 @@ services:
       - /var/products:/products
       - /dates:/usr/share/nginx/html/dates
 
-  nginx-tiles:
-    build: ./nginx
-    ports:
-      - '4000:80'
-    volumes:
-      - /var/products:/usr/share/nginx/html:ro
+ # nginx-tiles:
+  #  build: ./nginx
+  #  ports:
+  #    - '4000:80'
+  #  volumes:
+  #    - /var/products:/usr/share/nginx/html:ro

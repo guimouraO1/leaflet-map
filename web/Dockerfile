@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:21.1.0
 
 WORKDIR /usr/src/app
 
@@ -7,7 +7,7 @@ RUN npm install
 
 COPY . .
 
-FROM nginx
+FROM nginx:1.25.5
 
 WORKDIR /usr/share/nginx/html
 
