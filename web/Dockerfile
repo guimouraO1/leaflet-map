@@ -7,10 +7,12 @@ RUN npm install
 
 COPY . .
 
-FROM nginx:1.25.5
+FROM nginx:1.27-alpine
 
 WORKDIR /usr/share/nginx/html
 
 COPY . .
 COPY ./conf/nginx.conf /etc/nginx/nginx.conf
-# COPY ./conf/default.conf /etc/nginx/conf.d/default.conf
+COPY ./conf/default.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 443

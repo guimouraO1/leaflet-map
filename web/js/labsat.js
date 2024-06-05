@@ -11,7 +11,7 @@ let map;
 let timeDimensionControl;
 let currentLayer = null;
 let menuButton;
-let defaultLayer;
+let defaultLayer = 'truecolor';
 let userLocationButton;
 
 const toastLiveExample = document.getElementById("liveToast");
@@ -125,12 +125,9 @@ function createMap(dates) {
   }).addTo(map);
 
   // Selecionar camada de azulejos padrão
-  if (!localStorage.getItem("product")) {
-    defaultLayer = document.getElementById("layerSelect").value;
-  } else {
+  if (localStorage.getItem("product")) {
     defaultLayer = localStorage.getItem("product");
   }
-
   // Adicionando Tiles goes
   getTiledLayer(defaultLayer);
 
