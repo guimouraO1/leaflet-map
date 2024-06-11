@@ -1,17 +1,17 @@
 const defaultBounds = [
-    [-59.98897365428924, -5.026037385661109],
-    [59.999999999999986, -139.99999999999997],
+  [-59.98897365428924, -5.026037385661109],
+  [59.999999999999986, -139.99999999999997],
 ];
 const defaultBoundsRegions = [
-    [-59.98897365428924, -30.026037385661109],
-    [50.999999999999986, -139.99999999999997],
+  [-59.98897365428924, -30.026037385661109],
+  [55.999999999999986, -139.99999999999997],
 ];
 
 let map;
 let timeDimensionControl;
 let currentLayer = null;
 let menuButton;
-let defaultLayer = 'truecolor';
+let defaultLayer = "truecolor";
 let userLocationButton;
 
 const toastLiveExample = document.getElementById("liveToast");
@@ -34,71 +34,84 @@ function closeSideNav() {
 }
 
 function getTiledLayer(selectedValue) {
-    const tiledLayer = L.tileLayer(
-        `http://143.106.227.94:4000/{d}/{h}{m}/${selectedValue}/{z}/{x}/{y}.png`, {
-            tms: true,
-            attribution: "",
-            noWrap: true,
-            fadeAnimation: true,
-            zoomAnimation: true,
-            updateWhenIdle: true,
-            updateWhenZooming: true,
-        }
-    );
-    const timeLayer = L.timeDimension.layer.tileLayer.goes(tiledLayer, {
-        cacheBackward: 8,
-        cacheForward: 8,
-    });
-
-    if (currentLayer) {
-        map.timeDimension.unregisterSyncedLayer(currentLayer);
-        map.removeLayer(currentLayer);
+  if (currentLayer) {
+    map.timeDimension.unregisterSyncedLayer(currentLayer);
+    map.removeLayer(currentLayer);
+  }
+  let tiledLayer = L.tileLayer(
+    `https://eris.cpa.unicamp.br/{d}/{h}{m}/${selectedValue}/{z}/{x}/{y}.png`,
+    {
+      tms: true,
+      noWrap: true,
+      attribution: "",
+      minNativeZoom: 2,
+      maxNativeZoom: 7,
+      bounds: defaultBounds,
+      fadeAnimation: true,
+      zoomAnimation: true,
+      updateWhenIdle: true,
+      updateWhenZooming: true,
     }
+  );
 
-    currentLayer = timeLayer.addTo(map);
-    map.timeDimension.registerSyncedLayer(currentLayer);
+  let timeLayer = L.timeDimension.layer.tileLayer.goes(tiledLayer, {});
+  currentLayer = timeLayer.addTo(map);
+  map.timeDimension.registerSyncedLayer(currentLayer);
 }
 
 function setupDatePicker(dates) {
-    const lastDate = moment(dates[dates.length - 1], "YYYYMMDDHHmm");
-    const firstDate = moment(dates[0], "YYYYMMDDHHmm");
+  const lastDate = moment(dates[dates.length - 1], "YYYYMMDDHHmm");
+  const firstDate = moment(dates[0], "YYYYMMDDHHmm");
 
-    $("#datetimepicker1").datetimepicker({
-        format: "DD/MM/YYYY HH:mm UTC",
-        stepping: 10,
-        minDate: firstDate,
-        maxDate: lastDate,
-        date: lastDate,
-        keepOpen: false,
-        timeZone: "UTC",
-    });
+  $("#datetimepicker1").datetimepicker({
+    format: "DD/MM/YYYY HH:mm UTC",
+    stepping: 10,
+    minDate: firstDate,
+    maxDate: lastDate,
+    date: lastDate,
+    keepOpen: false,
+    timeZone: "UTC",
+  });
 
-    $("#datetimepicker1").on("change.datetimepicker", function (event) {
-        const selectedDate = event.date.toDate();
-        const dateExists = dates.some(date =>
-            moment.utc(date).format("YYYY-MM-DD HH:mm") === moment(event.date).format("YYYY-MM-DD HH:mm")
-        );
+  $("#datetimepicker1").on("change.datetimepicker", function (event) {
+    const selectedDate = event.date.toDate();
+    const dateExists = dates.some(
+      (date) =>
+        moment.utc(date).format("YYYY-MM-DD HH:mm") ===
+        moment(event.date).format("YYYY-MM-DD HH:mm")
+    );
 
-        if (dateExists) {
-            map.timeDimension.setCurrentTime(moment(selectedDate).subtract({ hours: 2, minutes: 50 }).toISOString());
-        } else {
-            $("#mensagemToast").text(`Data: ${moment(event.date).format("YYYY/MM/DD HH:mm")} UTC indisponível`);
-            $("#alertToast").text("Alerta");
-            $("#iconToast").addClass("fa fa-exclamation-triangle").css("color", "#AA0000");
-            toastBootstrap.show();
-        }
-    });
+    if (dateExists) {
+      map.timeDimension.setCurrentTime(
+        moment(selectedDate).subtract({ hours: 2, minutes: 50 }).toISOString()
+      );
+    } else {
+      $("#mensagemToast").text(
+        `Data: ${moment(event.date).format(
+          "YYYY/MM/DD HH:mm"
+        )} UTC indisponível`
+      );
+      $("#alertToast").text("Alerta");
+      $("#iconToast")
+        .addClass("fa fa-exclamation-triangle")
+        .css("color", "#AA0000");
+      toastBootstrap.show();
+    }
+  });
 }
 
 function createMap(dates) {
+  console.log(dates[0]);
   map = L.map("map", {
-    minZoom: 5,
+    minZoom: 4,
     maxZoom: 6,
     noWrap: true,
     maxBounds: defaultBounds,
     timeDimension: true,
     timeDimensionOptions: {
+      // timeInterval: dates[0] + "/" + dates[5],
       times: dates,
+      period: "PT10M",
     },
   }).setView([-15, -60], 5);
 
@@ -107,7 +120,7 @@ function createMap(dates) {
     position: "topright",
     timeZones: ["UTC", "Local"],
     autoPlay: false,
-    loopButton: false,
+    loopButton: true,
     timeSteps: 1,
     playReverseButton: false,
     limitSliders: false,
@@ -116,13 +129,14 @@ function createMap(dates) {
     speedStep: 1,
     timeSliderDragUpdate: true,
     playerOptions: {
-      transitionTime: 0,
+      transitionTime: 350,
       loop: true,
-      buffer: 8,
-      minBufferReady: 5,
+      buffer: 2,
+      minBufferReady: 1,
       startOver: true,
     },
-  }).addTo(map);
+  });
+  map.addControl(timeDimensionControl);
 
   // Selecionar camada de azulejos padrão
   if (localStorage.getItem("product")) {
@@ -154,9 +168,13 @@ function createMap(dates) {
   // Para o player do timedimension para tirar a foto
   map.on("simpleMapScreenshoter.takeScreen", function () {
     timeDimensionControl._player.stop();
-    $("#mensagemToast").text("Carregando sua imagem. Isso pode levar alguns instantes.");
+    $("#mensagemToast").text(
+      "Carregando sua imagem. Isso pode levar alguns instantes."
+    );
     $("#alertToast").text("Processando...");
-    $("#iconToast").addClass("fa fa-spinner fa-spin fa-fw").css("color", "#0e4c66");
+    $("#iconToast")
+      .addClass("fa fa-spinner fa-spin fa-fw")
+      .css("color", "#0e4c66");
     toastBootstrap.show();
   });
 
@@ -251,19 +269,18 @@ function createMap(dates) {
     let countriesLayer = L.layerGroup();
     let statesLayer = L.layerGroup();
 
-    // Carregar dados geopolíticos
-    fetch("./shapefiles/ne_50m_admin_0_countries.geojson")
+    // geoJSON
+    fetch("./shapefiles/americas.geojson")
       .then((response) => response.json())
       .then((data) => {
         L.geoJSON(data, {
           style: function (feature) {
             return {
               fillColor: "gray",
-              weight: 1.2,
+              weight: 1,
               opacity: 1,
               color: "White",
               fillOpacity: 0,
-              maxBounds: defaultBoundsRegions,
             };
           },
         }).addTo(countriesLayer);
@@ -276,7 +293,7 @@ function createMap(dates) {
           style: function (feature) {
             return {
               fillColor: "green",
-              weight: 1.2,
+              weight: 1,
               opacity: 1,
               color: "White",
               fillOpacity: 0,
@@ -288,6 +305,9 @@ function createMap(dates) {
     let cartoLabels = L.tileLayer(
       "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",
       {
+        minZoom: 3,
+        maxZoom: 7,
+        zIndex: 100,
         attribution: "",
         bounds: defaultBoundsRegions,
         pane: "references-pane",
@@ -300,9 +320,9 @@ function createMap(dates) {
       Estados: statesLayer,
     };
 
-    map.addLayer(cartoLabels);
     map.addLayer(countriesLayer);
     map.addLayer(statesLayer);
+    map.addLayer(cartoLabels);
 
     let layerControl = L.control.layers(null, overlayMaps, {
       collapsed: false,
@@ -354,8 +374,7 @@ function changeLayer() {
   let selectedValue = document.getElementById("layerSelect").value;
 
   localStorage.setItem("product", selectedValue);
-
-  let baseUrl = "http://143.106.227.94:8008/dates/";
+  let baseUrl = "https://plataforma.labsat.cpa.unicamp.br/dates/";
 
   let dateUrl =
     selectedValue !== "truecolor"
@@ -368,13 +387,16 @@ function changeLayer() {
   request.send();
 
   request.onload = function () {
-    map.timeDimension.setAvailableTimes(request.response.dates, "replace");
-    const lastDate = new Date(dates[dates.length - 1]).getTime();
-    map.timeDimension.setCurrentTime(lastDate);
+    dates = request.response.dates;
+    map.timeDimension.setAvailableTimes(dates, "replace");
     setupDatePicker(dates);
+    try {
+      map.timeDimension.setCurrentTime(moment(dates[dates.length - 2]));
+      getTiledLayer(selectedValue);
+    } catch (error) {
+      console.log("Erro linha 53");
+    }
   };
-
-  getTiledLayer(selectedValue);
 }
 
 function toastFirtTime() {
@@ -389,9 +411,10 @@ function toastFirtTime() {
 
 window.onload = function () {
   (function getDate() {
-    let dateUrl = "http://143.106.227.94:8008/dates/date_ch17.json";
+    let dateUrl =
+      "https://plataforma.labsat.cpa.unicamp.br/dates/date_ch17.json";
     let request = new XMLHttpRequest();
-    request.open("GET", dateUrl);
+    request.open("GET", dateUrl, true);
     request.responseType = "json";
     request.send();
     request.onload = function () {
@@ -400,4 +423,3 @@ window.onload = function () {
     };
   })();
 };
-

@@ -63,7 +63,6 @@ body {
   background-color: #030303;
 }
 .form-group {
-  /* Datepicker */
   margin-top: 20px;
   width: 100% !important;
 }
@@ -89,4 +88,16 @@ body {
   flex-direction: row;
   align-items: center;
   justify-content: center;
+}
+
+@media (max-width: 650px) {
+  .logo-div {
+    z-index: 1000;
+    width: 130px;
+    height: 30px;
+  }
+  .logo {
+    width: 130px;
+    height: 30px;
+  }
 }
