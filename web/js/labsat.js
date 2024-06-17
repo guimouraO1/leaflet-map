@@ -13,6 +13,7 @@ let currentLayer = null;
 let menuButton;
 let defaultLayer = "truecolor";
 let userLocationButton;
+let colorbar;
 
 const toastLiveExample = document.getElementById("liveToast");
 const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
@@ -100,8 +101,44 @@ function setupDatePicker(dates) {
   });
 }
 
+function changeCOlorbar(selectedValue) {
+  if (colorbar && selectedValue != "truecolor") {
+    colorbar.update = function (props) {
+      this._div.innerHTML = `<img src="./images/colorbars/${selectedValue}.png" class="colorbar" alt="Cepagri-Logo"/>`;
+    };
+  }
+  if (colorbar && selectedValue == "truecolor") {
+    colorbar.update = function (props) {
+      this._div.innerHTML = `<img src="./images/colorbars/ch13.png" class="colorbar" alt="Cepagri-Logo"/>`;
+    };
+  }
+  colorbar.update();
+}
+
+function setupColorbar(selectedValue) {
+  if (colorbar) return;
+  colorbar = L.control({ position: "bottomright" });
+
+  colorbar.onAdd = function (map) {
+    this._div = L.DomUtil.create("div", "info");
+    this.update();
+    return this._div;
+  };
+
+  colorbar.update = function (props) {
+    if (selectedValue && selectedValue != "truecolor") {
+      this._div.innerHTML = `<img src="./images/colorbars/${selectedValue}.png" class="colorbar" alt="Cepagri-Logo"/>`;
+    } else if (selectedValue == "truecolor") {
+      this._div.innerHTML = `<img src="./images/colorbars/ch13.png" class="colorbar" alt="Cepagri-Logo"/>`;
+    } else {
+      this._div.innerHTML = ""; // Limpa o conteúdo se nenhum valor selecionado
+    }
+  };
+
+  colorbar.addTo(map);
+}
+
 function createMap(dates) {
-  console.log(dates[0]);
   map = L.map("map", {
     minZoom: 4,
     maxZoom: 6,
@@ -350,7 +387,6 @@ function createMap(dates) {
     }).addTo(map);
   })();
 
-  // Adicionar botão de informações
   L.easyButton({
     states: [
       {
@@ -364,6 +400,40 @@ function createMap(dates) {
     position: "topleft",
   }).addTo(map);
 
+  // Colorbars button
+  colorbarButton = L.easyButton({
+    states: [
+      {
+        stateName: "open-colorbar",
+        icon: '<i class="fa fa-bar-chart" aria-hidden="true"></i>',
+        title: "Abrir tabela de cores",
+        onClick: function (e, a) {
+          let selectedValue = document.getElementById("layerSelect").value;
+          if (localStorage.getItem("product")) {
+            selectedValue = localStorage.getItem("product");
+          }
+          setupColorbar(selectedValue);
+          colorbarButton.state("close-colorbar");
+        },
+      },
+      {
+        stateName: "close-colorbar",
+        icon: '<i class="fa fa-times" aria-hidden="true"></i>',
+        title: "Fechar a tabela de cores",
+        onClick: function (e, a) {
+          if (colorbar) {
+            map.removeControl(colorbar);
+            colorbar = null;
+          }
+          colorbarButton.state("open-colorbar");
+        },
+      },
+    ],
+    position: "bottomright",
+  }).addTo(map);
+
+  colorbarButton._currentState.onClick();
+
   // Fechar o modal de informações
   $("#about-close").on("click", function () {
     $("#about").modal("hide");
@@ -374,6 +444,9 @@ function changeLayer() {
   let selectedValue = document.getElementById("layerSelect").value;
 
   localStorage.setItem("product", selectedValue);
+  try {
+    changeCOlorbar(selectedValue);
+  } catch (error) {}
   let baseUrl = "https://plataforma.labsat.cpa.unicamp.br/dates/";
 
   let dateUrl =
