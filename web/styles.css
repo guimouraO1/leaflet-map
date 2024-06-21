@@ -66,22 +66,16 @@ body {
   margin-top: 20px;
   width: 100% !important;
 }
-.logo-div {
-  bottom: 0%;
-  right: 80px;
-  position: absolute;
-  width: 230px;
-  height: 50px;
-  z-index: 1000;
-}
-.logo {
-  position: absolute;
-  width: 230px;
-  height: 50px;
-}
 .modal-body p {
   font-size: medium;
 }
+#close-menu {
+  transform: scale(1.2);
+}
+#close-menu:hover {
+  color: rgb(255, 0, 0);
+}
+
 .img-modal-about {
   width: 100%;
   display: flex;
@@ -89,31 +83,46 @@ body {
   align-items: center;
   justify-content: center;
 }
-
 .info {
   padding: 6px 8px;
   font: 14px/16px Arial, Helvetica, sans-serif;
-  background: white;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.26);
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
 }
 .info img {
   width: 400px;
 }
+#colorbar-close {
+  padding: 10px 10px;
+  cursor: pointer;
+}
+#colorbar-close:hover {
+  color: rgb(255, 0, 0);
+}
+.logoCepagriPrint {
+  border-radius: 5px;
+  padding: 6px 8px;
+  font: 14px/16px Arial, Helvetica, sans-serif;
+}
+.logoCepagriPrint img {
+  width: 230px;
+}
+
+.leaflet-control-layers-overlays label {
+  margin-bottom: 0px !important;
+}
 
 @media (max-width: 650px) {
-  .logo-div {
-    z-index: 1000;
-    width: 130px;
-    height: 30px;
-  }
-  .logo {
+  .logoCepagriPrint {
     width: 130px;
     height: 30px;
   }
   .info img {
     width: 300px;
+  }
+  .logoCepagriPrint img {
+    width: 120px;
   }
 }
 @media (max-width: 320px) {

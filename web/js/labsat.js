@@ -1,22 +1,21 @@
 const defaultBounds = [
-  [-59.98897365428924, -5.026037385661109],
-  [59.999999999999986, -139.99999999999997],
-];
-const defaultBoundsRegions = [
-  [-59.98897365428924, -30.026037385661109],
-  [55.999999999999986, -139.99999999999997],
-];
+    [-59.98897365428924, -5.026037385661109],
+    [59.999999999999986, -139.99999999999997],
+  ],
+  defaultBoundsRegions = [
+    [-59.98897365428924, -30.026037385661109],
+    [55.999999999999986, -139.99999999999997],
+  ],
+  toastLiveExample = document.getElementById("liveToast"),
+  toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
 
-let map;
-let timeDimensionControl;
-let currentLayer = null;
-let menuButton;
-let defaultLayer = "truecolor";
-let userLocationButton;
-let colorbar;
-
-const toastLiveExample = document.getElementById("liveToast");
-const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
+let map,
+  timeDimensionControl,
+  currentLayer = null,
+  menuButton,
+  defaultLayer = "truecolor",
+  userLocationButton,
+  colorbar;
 
 function openSideNav() {
   document.getElementById("side-nav").style.left = "0px";
@@ -36,8 +35,8 @@ function closeSideNav() {
 
 function getTiledLayer(selectedValue) {
   if (currentLayer) {
-    map.timeDimension.unregisterSyncedLayer(currentLayer);
     map.removeLayer(currentLayer);
+    map.timeDimension.unregisterSyncedLayer(currentLayer);
   }
   let tiledLayer = L.tileLayer(
     `https://eris.cpa.unicamp.br/{d}/{h}{m}/${selectedValue}/{z}/{x}/{y}.png`,
@@ -101,18 +100,28 @@ function setupDatePicker(dates) {
   });
 }
 
-function changeCOlorbar(selectedValue) {
+function changeColorbar(selectedValue) {
   if (colorbar && selectedValue != "truecolor") {
     colorbar.update = function (props) {
-      this._div.innerHTML = `<img src="./images/colorbars/${selectedValue}.png" class="colorbar" alt="Cepagri-Logo"/>`;
+      this._div.innerHTML = `<img src="./images/colorbars/${selectedValue}.png" class="colorbar" alt="Cepagri-Logo"/>
+      <i class="fa fa-times" id="colorbar-close" aria-hidden="true"></i>`;
     };
   }
   if (colorbar && selectedValue == "truecolor") {
     colorbar.update = function (props) {
-      this._div.innerHTML = `<img src="./images/colorbars/ch13.png" class="colorbar" alt="Cepagri-Logo"/>`;
+      this._div.innerHTML = `<img src="./images/colorbars/ch13.png" class="colorbar" alt="Cepagri-Logo"/>
+      <i class="fa fa-times" id="colorbar-close" aria-hidden="true"></i>`;
     };
   }
   colorbar.update();
+  $("#colorbar-close").on("click", function () {
+    if (colorbar) {
+      map.removeControl(colorbar);
+      colorbar = null;
+      localStorage.setItem("colorbar", false);
+      colorbarButton.addTo(map);
+    }
+  });
 }
 
 function setupColorbar(selectedValue) {
@@ -127,32 +136,88 @@ function setupColorbar(selectedValue) {
 
   colorbar.update = function (props) {
     if (selectedValue && selectedValue != "truecolor") {
-      this._div.innerHTML = `<img src="./images/colorbars/${selectedValue}.png" class="colorbar" alt="Cepagri-Logo"/>`;
+      this._div.innerHTML = `<img src="./images/colorbars/${selectedValue}.png" class="colorbar" alt="Cepagri-Logo"/>
+      <i class="fa fa-times" id="colorbar-close" aria-hidden="true"></i>
+      `;
     } else if (selectedValue == "truecolor") {
-      this._div.innerHTML = `<img src="./images/colorbars/ch13.png" class="colorbar" alt="Cepagri-Logo"/>`;
+      this._div.innerHTML = `<img src="./images/colorbars/ch13.png" class="colorbar" alt="Cepagri-Logo"/>
+      <i class="fa fa-times" id="colorbar-close" aria-hidden="true"></i>`;
     } else {
-      this._div.innerHTML = ""; // Limpa o conteúdo se nenhum valor selecionado
+      this._div.innerHTML = "";
     }
   };
 
   colorbar.addTo(map);
+
+  $("#colorbar-close").on("click", function () {
+    if (colorbar) {
+      map.removeControl(colorbar);
+      colorbar = null;
+      localStorage.setItem("colorbar", false);
+      colorbarButton.addTo(map);
+    }
+  });
+}
+
+function changeLayer() {
+  let selectedValue = document.getElementById("layerSelect").value;
+
+  localStorage.setItem("product", selectedValue);
+  try {
+    changeColorbar(selectedValue);
+  } catch (error) {
+    console.log("Colorbar Change Error");
+  }
+  let baseUrl = "https://plataforma.labsat.cpa.unicamp.br/dates/";
+
+  let dateUrl =
+    selectedValue !== "truecolor"
+      ? `${baseUrl}date_${selectedValue}.json`
+      : `${baseUrl}date_ch17.json`;
+
+  let request = new XMLHttpRequest();
+  request.open("GET", dateUrl);
+  request.responseType = "json";
+  request.send();
+
+  request.onload = function () {
+    dates = request.response.dates;
+    map.timeDimension.setAvailableTimes(dates, "replace");
+    setupDatePicker(dates);
+    try {
+      map.timeDimension.setCurrentTime(moment(dates[dates.length - 2]));
+      getTiledLayer(selectedValue);
+    } catch (error) {
+      console.log("Erro linha 53");
+    }
+  };
+}
+
+function toastFirtTime() {
+  if (localStorage.getItem("firstTime")) return;
+  localStorage.setItem("firstTime", true);
+
+  $("#mensagemToast").text("Bem vindo(a) ao Labsat!");
+  $("#alertToast").text("LABSAT");
+  $("#iconToast").addClass("fa fa-check").css("color", "#0e4c66");
+  toastBootstrap.show();
 }
 
 function createMap(dates) {
+  // Criando mapa
   map = L.map("map", {
     minZoom: 4,
-    maxZoom: 6,
+    maxZoom: 7,
     noWrap: true,
+    attributionControl: false,
     maxBounds: defaultBounds,
     timeDimension: true,
     timeDimensionOptions: {
-      // timeInterval: dates[0] + "/" + dates[5],
       times: dates,
       period: "PT10M",
     },
   }).setView([-15, -60], 5);
-
-  // Adicionar controle de dimensão do tempo
+  // Adicionando dimensão temporal
   timeDimensionControl = new L.Control.TimeDimensionCustom({
     position: "topright",
     timeZones: ["UTC", "Local"],
@@ -173,49 +238,16 @@ function createMap(dates) {
       startOver: true,
     },
   });
+
   map.addControl(timeDimensionControl);
 
-  // Selecionar camada de azulejos padrão
+  // Verficando ultima Layer escolhida e adicionando ao timedimension
   if (localStorage.getItem("product")) {
     defaultLayer = localStorage.getItem("product");
   }
-  // Adicionando Tiles goes
   getTiledLayer(defaultLayer);
 
-  // Adicionar geocodificador
-  L.Control.geocoder({
-    placeholder: "Pesquisar localização...",
-    errorMessage:
-      '<i class="fa fa-exclamation-circle" aria-hidden="true"></i> Localização não encontrada',
-    position: "topright",
-  }).addTo(map);
-
-  // Adicionar botão de print
-  L.simpleMapScreenshoter({
-    position: "topright",
-    screenName: function () {
-      return (
-        moment
-          .utc(map.timeDimension.getCurrentTime())
-          .format("DD_MM_YYYY_HH:mm") + "_UTC_CEPAGRI"
-      );
-    },
-  }).addTo(map);
-
-  // Para o player do timedimension para tirar a foto
-  map.on("simpleMapScreenshoter.takeScreen", function () {
-    timeDimensionControl._player.stop();
-    $("#mensagemToast").text(
-      "Carregando sua imagem. Isso pode levar alguns instantes."
-    );
-    $("#alertToast").text("Processando...");
-    $("#iconToast")
-      .addClass("fa fa-spinner fa-spin fa-fw")
-      .css("color", "#0e4c66");
-    toastBootstrap.show();
-  });
-
-  // Adicionar botão do menu
+  // Botão Menu
   menuButton = L.easyButton({
     states: [
       {
@@ -238,7 +270,75 @@ function createMap(dates) {
     position: "topleft",
   }).addTo(map);
 
-  // Botão para localização do usuário
+  $("#close-menu-button").on("click", function () {
+    closeSideNav();
+  });
+
+  // Botão sobre
+  sobre = L.easyButton({
+    states: [
+      {
+        icon: '<i id="about-button" class="fa fa-info-circle" aria-hidden="true"></i>',
+        title: "Sobre",
+        onClick: function (e, a) {
+          $("#about").modal("show");
+        },
+      },
+    ],
+    position: "topleft",
+  }).addTo(map);
+
+  $("#about-close").on("click", function () {
+    $("#about").modal("hide");
+  });
+
+  // Adicionando  Botão Pesquisar
+  L.Control.geocoder({
+    placeholder: "Pesquisar localização...",
+    errorMessage:
+      '<i class="fa fa-exclamation-circle" aria-hidden="true"></i> Localização não encontrada',
+    position: "topright",
+  }).addTo(map);
+
+  // Configurando e adicionando map ScreenShoter
+  L.simpleMapScreenshoter({
+    position: "topright",
+    hideElementsWithSelectors: [
+      ".leaflet-touch .leaflet-control-attribution, .leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar",
+      ".leaflet-control-simpleMapScreenshoter",
+    ],
+    screenName: function () {
+      try {
+        if (localStorage.getItem("product") != null) {
+          layerValueNow = localStorage.getItem("product");
+        }
+      } catch (error) {
+        layerValueNow = "ch??";
+      }
+      return (
+        moment
+          .utc(map.timeDimension.getCurrentTime())
+          .format("YYYY-MM-DD_HH-mm") + // Formato de data e hora padronizado
+        "_UTC_CEPAGRI_" +
+        layerValueNow
+      );
+    },
+  }).addTo(map);
+
+  map.on("simpleMapScreenshoter.takeScreen", function () {
+    timeDimensionControl._player.stop();
+    $("#mensagemToast").text(
+      "Carregando sua imagem. Isso pode levar alguns instantes."
+    );
+    $("#alertToast").text("Processando...");
+    $("#iconToast")
+      .addClass("fa fa-spinner fa-spin fa-fw")
+      .css("color", "#0e4c66");
+    toastBootstrap.show();
+  });
+  map.on("simpleMapScreenshoter.done", function () {});
+
+  // Adicionando botão Ir para minha localização
   userLocationButton = L.easyButton({
     states: [
       {
@@ -290,15 +390,7 @@ function createMap(dates) {
     position: "topright",
   }).addTo(map);
 
-  // Fechar o menu lateral ao clicar no botão
-  $("#close-menu-button").on("click", function () {
-    closeSideNav();
-  });
-
-  // Datetimepicker
-  setupDatePicker(dates);
-
-  // Adicionar botão de camadas
+  // Adicionando Botão Selecionar camadas
   (function () {
     map.createPane("references-pane");
     map.getPane("references-pane").style.zIndex = 201;
@@ -339,17 +431,27 @@ function createMap(dates) {
         }).addTo(statesLayer);
       });
 
-    let cartoLabels = L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",
+    const apiKey = API_ARCGIS_LABELS;
+    let cartoLabels = L.esri.Vector.vectorBasemapLayer(
+      "arcgis/human-geography/labels",
       {
-        minZoom: 3,
-        maxZoom: 7,
-        zIndex: 100,
-        attribution: "",
-        bounds: defaultBoundsRegions,
-        pane: "references-pane",
+        apiKey: apiKey,
+        version: 2,
+        language: "pt-BR",
       }
     );
+
+    // let cartoLabels = L.tileLayer(
+    //   "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",
+    //   {
+    //     minZoom: 3,
+    //     maxZoom: 7,
+    //     zIndex: 100,
+    //     attribution: "",
+    //     bounds: defaultBoundsRegions,
+    //     pane: "references-pane",
+    //   }
+    // );
 
     let overlayMaps = {
       Lugares: cartoLabels,
@@ -387,99 +489,53 @@ function createMap(dates) {
     }).addTo(map);
   })();
 
-  L.easyButton({
-    states: [
-      {
-        icon: '<i id="about-button" class="fa fa-info-circle" aria-hidden="true"></i>',
-        title: "Sobre",
-        onClick: function (e, a) {
-          $("#about").modal("show");
-        },
-      },
-    ],
-    position: "topleft",
-  }).addTo(map);
+  // Configurando datetimepicker
+  setupDatePicker(dates);
 
-  // Colorbars button
+  // Adicionando logo CEPAGRI
+  (function () {
+    cepagriLogo = L.control({ position: "bottomright" });
+    cepagriLogo.onAdd = function (map) {
+      this._div = L.DomUtil.create("div", "logoCepagriPrint");
+      this.update();
+      return this._div;
+    };
+    cepagriLogo.update = function (props) {
+      this._div.innerHTML = `<img src="./images/logos/CEPAGRI-Logo.png" alt="Cepagri-Logo"/>`;
+    };
+    cepagriLogo.addTo(map);
+  })();
+
+  // Adicionando colorbar
   colorbarButton = L.easyButton({
     states: [
       {
         stateName: "open-colorbar",
         icon: '<i class="fa fa-bar-chart" aria-hidden="true"></i>',
         title: "Abrir tabela de cores",
-        onClick: function (e, a) {
+        onClick: function (btn, map) {
           let selectedValue = document.getElementById("layerSelect").value;
           if (localStorage.getItem("product")) {
             selectedValue = localStorage.getItem("product");
           }
           setupColorbar(selectedValue);
-          colorbarButton.state("close-colorbar");
-        },
-      },
-      {
-        stateName: "close-colorbar",
-        icon: '<i class="fa fa-times" aria-hidden="true"></i>',
-        title: "Fechar a tabela de cores",
-        onClick: function (e, a) {
-          if (colorbar) {
-            map.removeControl(colorbar);
-            colorbar = null;
-          }
-          colorbarButton.state("open-colorbar");
+          localStorage.setItem("colorbar", true);
+          map.removeControl(colorbarButton);
         },
       },
     ],
     position: "bottomright",
-  }).addTo(map);
-
-  colorbarButton._currentState.onClick();
-
-  // Fechar o modal de informações
-  $("#about-close").on("click", function () {
-    $("#about").modal("hide");
   });
-}
 
-function changeLayer() {
-  let selectedValue = document.getElementById("layerSelect").value;
-
-  localStorage.setItem("product", selectedValue);
-  try {
-    changeCOlorbar(selectedValue);
-  } catch (error) {}
-  let baseUrl = "https://plataforma.labsat.cpa.unicamp.br/dates/";
-
-  let dateUrl =
-    selectedValue !== "truecolor"
-      ? `${baseUrl}date_${selectedValue}.json`
-      : `${baseUrl}date_ch17.json`;
-
-  let request = new XMLHttpRequest();
-  request.open("GET", dateUrl);
-  request.responseType = "json";
-  request.send();
-
-  request.onload = function () {
-    dates = request.response.dates;
-    map.timeDimension.setAvailableTimes(dates, "replace");
-    setupDatePicker(dates);
-    try {
-      map.timeDimension.setCurrentTime(moment(dates[dates.length - 2]));
-      getTiledLayer(selectedValue);
-    } catch (error) {
-      console.log("Erro linha 53");
+  if (localStorage.getItem("colorbar") == "false") {
+    colorbarButton.addTo(map);
+  } else {
+    let selectedValue = document.getElementById("layerSelect").value;
+    if (localStorage.getItem("product")) {
+      selectedValue = localStorage.getItem("product");
     }
-  };
-}
-
-function toastFirtTime() {
-  if (localStorage.getItem("firstTime")) return;
-  localStorage.setItem("firstTime", true);
-
-  $("#mensagemToast").text("Bem vindo(a) ao Labsat!");
-  $("#alertToast").text("LABSAT");
-  $("#iconToast").addClass("fa fa-check").css("color", "#0e4c66");
-  toastBootstrap.show();
+    setupColorbar(selectedValue);
+  }
 }
 
 window.onload = function () {

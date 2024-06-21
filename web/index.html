@@ -60,6 +60,20 @@
       crossorigin="anonymous"
     />
   </head>
+  <!-- Google tag (gtag.js) -->
+  <script
+    async
+    src="https://www.googletagmanager.com/gtag/js?id=G-CME198PD15"
+  ></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+
+    gtag("config", "G-CME198PD15");
+  </script>
   <body>
     <!-- toast -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
@@ -152,31 +166,32 @@
       </div>
     </div>
 
-    <!-- Logo -->
-    <div class="logo-div">
-      <img
-        class="logo"
-        src="./images/logos/CEPAGRI-Logo.png"
-        alt="Cepagri-Logo"
-      />
-    </div>
-
     <!-- Modal About -->
     <div class="modal fade about" id="about" tabindex="-1" role="dialog">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="aboutTitle">LABSAT - Versão: 0.0.1</h5>
+            <h5 class="modal-title" id="aboutTitle">LABSAT - Versão: 1.0.0</h5>
           </div>
           <div class="modal-body">
             <h6>Copyright © CEPAGRI</h6>
-            <p>Contato: guimoura@unicamp.br</p>
+            <p>Contato: cpainfo@unicamp.br</p>
             <hr />
             <p>
-              <a href="" target="_blank" rel="noreferrer"
+              <a
+                href="https://www.cpa.unicamp.br/"
+                target="_blank"
+                rel="noreferrer"
                 >Centro de Pesquisas Meteorológicas e Climáticas Aplicadas à
-                Agricultura
-              </a>
+                Agricultura</a
+              >,
+              <a
+                href="https://labsat.cpa.unicamp.br/"
+                target="_blank"
+                rel="noreferrer"
+                >Laboratório de Processamento de Dados e Imagens de
+                Sensoriamento Remoto</a
+              >
             </p>
             <hr />
             <div class="img-modal-about">
@@ -188,10 +203,26 @@
             </div>
             <hr />
             <h6>Referência</h6>
-            <p>Aplicação para visualização interativa dos dados GOES-16</p>
+            <p>
+              Aplicação para visualização interativa dos dados do satélite
+              GOES-16. A referência bibliográfica será fornecida em breve.
+            </p>
             <hr />
             <h6>Aviso Importante</h6>
-            <p>Algo sobre o LABSAT</p>
+            <p>
+              Os produtos apresentados nesta página são públicos, abertos,
+              gratuitos e não podem ser usados para propósitos comerciais. Os
+              usuários deverão sempre mencionar a fonte das informações e dados
+              como "CEPAGRI/UNICAMP" e fazer referência da fonte observando o
+              seguinte formato: "Plataforma LabSat - Aplicação para visualização
+              interativa dos dados do satélite GOES-16, acessado em [data]
+              através do link:
+              <a href="https://plataforma.labsat.cpa.unicamp.br/"
+                >https://plataforma.labsat.cpa.unicamp.br/</a
+              >". Em nenhum caso o CEPAGRI/UNICAMP pode ser responsabilizado por
+              danos especiais, indiretos ou decorrentes, ou nenhum dano
+              vinculado ao que provenha do uso destes produtos.
+            </p>
           </div>
           <div class="modal-footer">
             <button
@@ -256,6 +287,10 @@
   <script src="https://unpkg.com/leaflet-simple-map-screenshoter"></script>
   <!-- Timedimension goes extend -->
   <script src="js/leaflet.timedimension.tilelayer.goes.min.js"></script>
+  <!-- Load Esri Leaflet from CDN -->
+  <script src="https://unpkg.com/esri-leaflet@3.0.12/dist/esri-leaflet.js"></script>
+  <script src="https://unpkg.com/esri-leaflet-vector@4.2.3/dist/esri-leaflet-vector.js"></script>
   <!-- main code -->
   <script src="./js/labsat.js"></script>
+  <script src="./js/config.js"></script>
 </html>
