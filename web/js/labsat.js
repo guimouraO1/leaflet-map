@@ -304,28 +304,28 @@ function createMap(dates) {
   L.simpleMapScreenshoter({
     position: "topright",
     hideElementsWithSelectors: [
-      ".leaflet-touch .leaflet-control-attribution, .leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar",
+      ".leaflet-touch .leaflet-control-attribution",
+      ".leaflet-touch .leaflet-control-layers",
+      ".leaflet-touch .leaflet-bar",
       ".leaflet-control-simpleMapScreenshoter",
     ],
     screenName: function () {
       try {
-        if (localStorage.getItem("product") != null) {
-          layerValueNow = localStorage.getItem("product");
-        }
+        const layerValueNow = localStorage.getItem("product") || "True Color";
+        return (
+          moment
+            .utc(map.timeDimension.getCurrentTime())
+            .format("YYYY-MM-DD_HH-mm") +
+          "_UTC_CEPAGRI_" +
+          layerValueNow
+        );
       } catch (error) {
-        layerValueNow = "ch??";
+        return "CEPAGRI_ch??";
       }
-      return (
-        moment
-          .utc(map.timeDimension.getCurrentTime())
-          .format("YYYY-MM-DD_HH-mm") + // Formato de data e hora padronizado
-        "_UTC_CEPAGRI_" +
-        layerValueNow
-      );
     },
   }).addTo(map);
 
-  map.on("simpleMapScreenshoter.takeScreen", function () {
+  map.on("simpleMapScreenshoter.takeScreen", () => {
     timeDimensionControl._player.stop();
     $("#mensagemToast").text(
       "Carregando sua imagem. Isso pode levar alguns instantes."
@@ -336,7 +336,13 @@ function createMap(dates) {
       .css("color", "#0e4c66");
     toastBootstrap.show();
   });
-  map.on("simpleMapScreenshoter.done", function () {});
+  map.on("simpleMapScreenshoter.done", () => {
+    timeDimensionControl._player.stop();
+    $("#mensagemToast").text("Imagem pronta!");
+    $("#alertToast").text("Baixando...");
+    $("#iconToast").addClass("fa fa-check").css("color", "#4CBB17");
+    toastBootstrap.show();
+  });
 
   // Adicionando botão Ir para minha localização
   userLocationButton = L.easyButton({
@@ -405,11 +411,10 @@ function createMap(dates) {
         L.geoJSON(data, {
           style: function (feature) {
             return {
-              fillColor: "gray",
-              weight: 1,
+              fillOpacity: 0,
+              weight: 0.4,
               opacity: 1,
               color: "White",
-              fillOpacity: 0,
             };
           },
         }).addTo(countriesLayer);
@@ -421,21 +426,19 @@ function createMap(dates) {
         L.geoJSON(data, {
           style: function (feature) {
             return {
-              fillColor: "green",
-              weight: 1,
+              fillOpacity: 0,
+              weight: 0.4,
               opacity: 1,
               color: "White",
-              fillOpacity: 0,
             };
           },
         }).addTo(statesLayer);
       });
 
-    const apiKey = API_ARCGIS_LABELS;
     let cartoLabels = L.esri.Vector.vectorBasemapLayer(
       "arcgis/human-geography/labels",
       {
-        apiKey: apiKey,
+        apiKey: API_KEY,
         version: 2,
         language: "pt-BR",
       }
@@ -458,10 +461,9 @@ function createMap(dates) {
       Fronteiras: countriesLayer,
       Estados: statesLayer,
     };
-
+    map.addLayer(cartoLabels);
     map.addLayer(countriesLayer);
     map.addLayer(statesLayer);
-    map.addLayer(cartoLabels);
 
     let layerControl = L.control.layers(null, overlayMaps, {
       collapsed: false,

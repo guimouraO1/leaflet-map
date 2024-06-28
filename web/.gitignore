@@ -6,3 +6,4 @@ zzz.html
 .vscode
 conf/.nginx.conf
 js/config.js
+js/.env
