@@ -13,7 +13,7 @@ let map,
   timeDimensionControl,
   currentLayer = null,
   menuButton,
-  defaultLayer = "truecolor",
+  defaultLayer,
   userLocationButton,
   colorbar;
 
@@ -204,7 +204,6 @@ function toastFirtTime() {
 }
 
 function createMap(dates) {
-  // Criando mapa
   map = L.map("map", {
     minZoom: 4,
     maxZoom: 7,
@@ -217,7 +216,6 @@ function createMap(dates) {
       period: "PT10M",
     },
   }).setView([-15, -60], 5);
-  // Adicionando dimensão temporal
   timeDimensionControl = new L.Control.TimeDimensionCustom({
     position: "topright",
     timeZones: ["UTC", "Local"],
@@ -241,13 +239,13 @@ function createMap(dates) {
 
   map.addControl(timeDimensionControl);
 
-  // Verficando ultima Layer escolhida e adicionando ao timedimension
-  if (localStorage.getItem("product")) {
-    defaultLayer = localStorage.getItem("product");
-  }
+  defaultLayer = localStorage.getItem("product") || "truecolor";
+
+  $("#layerSelect").val(defaultLayer);
+  $("#layerSelect").change();
+
   getTiledLayer(defaultLayer);
 
-  // Botão Menu
   menuButton = L.easyButton({
     states: [
       {
@@ -336,6 +334,7 @@ function createMap(dates) {
       .css("color", "#0e4c66");
     toastBootstrap.show();
   });
+
   map.on("simpleMapScreenshoter.done", () => {
     timeDimensionControl._player.stop();
     $("#mensagemToast").text("Imagem pronta!");
@@ -354,7 +353,7 @@ function createMap(dates) {
         onClick: function (e, a) {
           userLocationButton.state("searching-user-location");
 
-          let timeout = setTimeout(function () {
+          let timeout = setTimeout(() => {
             userLocationButton.state("find-user-location");
           }, 10000);
 
@@ -435,14 +434,14 @@ function createMap(dates) {
         }).addTo(statesLayer);
       });
 
-    let cartoLabels = L.esri.Vector.vectorBasemapLayer(
-      "arcgis/human-geography/labels",
-      {
-        apiKey: API_KEY,
-        version: 2,
-        language: "pt-BR",
-      }
-    );
+    // let cartoLabels = L.esri.Vector.vectorBasemapLayer(
+    //   "arcgis/human-geography/labels",
+    //   {
+    //     apiKey: API_KEY,
+    //     version: 2,
+    //     language: "pt-BR",
+    //   }
+    // );
 
     // let cartoLabels = L.tileLayer(
     //   "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",
@@ -457,11 +456,11 @@ function createMap(dates) {
     // );
 
     let overlayMaps = {
-      Lugares: cartoLabels,
+      // Lugares: cartoLabels,
       Fronteiras: countriesLayer,
       Estados: statesLayer,
     };
-    map.addLayer(cartoLabels);
+    // map.addLayer(cartoLabels);
     map.addLayer(countriesLayer);
     map.addLayer(statesLayer);
 
