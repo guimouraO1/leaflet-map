@@ -434,14 +434,14 @@ function createMap(dates) {
         }).addTo(statesLayer);
       });
 
-    // let cartoLabels = L.esri.Vector.vectorBasemapLayer(
-    //   "arcgis/human-geography/labels",
-    //   {
-    //     apiKey: API_KEY,
-    //     version: 2,
-    //     language: "pt-BR",
-    //   }
-    // );
+    let cartoLabels = L.esri.Vector.vectorBasemapLayer(
+      "arcgis/human-geography/labels",
+      {
+        apiKey: API_KEY,
+        version: 2,
+        language: "pt-BR",
+      }
+    );
 
     // let cartoLabels = L.tileLayer(
     //   "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",
@@ -456,11 +456,11 @@ function createMap(dates) {
     // );
 
     let overlayMaps = {
-      // Lugares: cartoLabels,
+      Lugares: cartoLabels,
       Fronteiras: countriesLayer,
       Estados: statesLayer,
     };
-    // map.addLayer(cartoLabels);
+    map.addLayer(cartoLabels);
     map.addLayer(countriesLayer);
     map.addLayer(statesLayer);
 
