@@ -1,124 +1,51 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-  <head>
+
+<head>
     <title>Labsat | Mapa Interativo</title>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no"
-    />
-    <!-- Favicon  -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    
     <link rel="icon" type="image/png" href="/images/icon.png" />
-    <!-- Styles -->
     <link rel="stylesheet" href="styles.css" />
-    <!-- Leaflet -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
-    />
-    <!-- Timedimension -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.0/dist/leaflet.timedimension.control.min.css"
-    />
-    <!-- Control Geocoder -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"
-    />
-    <!-- Easybutton -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css"
-    />
-    <!-- Font-awesome -->
-    <link
-      rel="stylesheet"
-      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
-    />
-    <!-- Bootstrap  -->
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-      integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z"
-      crossorigin="anonymous"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-      crossorigin="anonymous"
-    />
-    <!-- Tempusdominus (datepicker) -->
-    <!-- Datepicker -->
-    <link
-      rel="stylesheet"
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.0/dist/leaflet.timedimension.control.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/css/tempusdominus-bootstrap-4.min.css"
       integrity="sha512-3JRrEUwaCkFUBLK1N8HehwQgu8e23jTH4np5NHOmQOobuC4ROQxFwFgBLTnhcnQRMs84muMh0PnnwXlPq5MGjg=="
-      crossorigin="anonymous"
-    />
-  </head>
-  <!-- Google tag (gtag.js) -->
-  <script
-    async
-    src="https://www.googletagmanager.com/gtag/js?id=G-CME198PD15"
-  ></script>
-  <!-- <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-    gtag("js", new Date());
+      crossorigin="anonymous" />
+</head>
 
-    gtag("config", "G-CME198PD15");
-  </script> -->
+<body>
   <body>
-    <!-- toast -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
-      <div
-        id="liveToast"
-        class="toast"
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-      >
+      <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
           <i id="iconToast" aria-hidden="true"></i>
           <strong class="me-auto" id="alertToast"></strong>
           <small>1 segundo atrás</small>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="toast"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
         <div class="toast-body" id="mensagemToast"></div>
       </div>
     </div>
-
-    <!-- side-nav -->
-    <div
-      id="side-nav"
-      class="side-nav p-4 m-0 border-0 bd-example m-0 border-0"
-    >
-      <span id="close-menu-button" class="closebtn"
-        ><i
-          class="fa fa-times"
-          style="transform: scale(1.2)"
-          aria-hidden="true"
-        ></i
-      ></span>
-
+  
+    <div id="side-nav" class="side-nav p-4 m-0 border-0 bd-example m-0 border-0">
+      <span id="close-menu-button" class="closebtn"><i class="fa fa-times" style="transform: scale(1.2)"
+          aria-hidden="true"></i></span>
+  
       <div class="header-side-nav">
-        <p>LABSAT</p>
+        <p id="labsat-btn" class="labsat-btn">LABSAT</p>
         <span>Visualização de Imagens</span>
       </div>
-
-      <!-- Select product -->
-      <select class="form-select p-2" id="layerSelect" onchange="changeLayer()">
+  
+      <select class="form-select p-2" id="layerSelect" onchange="mapApp.changeLayer()">
         <optgroup label="Produtos ABI 1-16">
           <option value="ch01">Banda 01 - Visible (0.47 µm)</option>
           <option value="ch02">Banda 02 - Visible (0.64 µm)</option>
@@ -140,32 +67,29 @@
         <optgroup label="Composições">
           <option value="truecolor">True Color (Cor Verdadeira)</option>
         </optgroup>
+        <optgroup label="Outros">
+          <option value="lst">Land Surface Temperature</option>
+        </optgroup>
       </select>
-
-      <!-- datepicker -->
+  
       <div class="form-group h-10">
-        <div
-          class="input-group date"
-          id="datetimepicker1"
-          data-target-input="nearest"
-        >
-          <input
-            type="text"
-            class="form-control datetimepicker-input"
-            data-target="#datetimepicker1"
-          />
-          <div
-            class="input-group-append"
-            data-target="#datetimepicker1"
-            data-toggle="datetimepicker"
-          >
+        <div class="input-group date" id="datetimepicker1" data-target-input="nearest">
+          <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker1" />
+          <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
             <div class="input-group-text"><i class="fa fa-calendar"></i></div>
           </div>
         </div>
       </div>
+  
+      <select class="form-select p-2" id="overlaySelect" onchange="mapApp.changeOverlayer()">
+        <optgroup label="Sobreposições">
+          <option value="0">Sem sobreposição</option>
+          <option value="rrqpef">rrqpef</option>
+          <option value="glm">Glm</option>
+        </optgroup>
+      </select>
     </div>
-
-    <!-- Modal About -->
+  
     <div class="modal fade about" id="about" tabindex="-1" role="dialog">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -177,28 +101,16 @@
             <p>Contato: cpainfo@unicamp.br</p>
             <hr />
             <p>
-              <a
-                href="https://www.cpa.unicamp.br/"
-                target="_blank"
-                rel="noreferrer"
-                >Centro de Pesquisas Meteorológicas e Climáticas Aplicadas à
-                Agricultura</a
-              >,
-              <a
-                href="https://labsat.cpa.unicamp.br/"
-                target="_blank"
-                rel="noreferrer"
-                >Laboratório de Processamento de Dados e Imagens de
-                Sensoriamento Remoto</a
-              >
+              <a href="https://www.cpa.unicamp.br/" target="_blank" rel="noreferrer">Centro de Pesquisas Meteorológicas e
+                Climáticas Aplicadas à
+                Agricultura</a>,
+              <a href="https://labsat.cpa.unicamp.br/" target="_blank" rel="noreferrer">Laboratório de Processamento de
+                Dados e Imagens de
+                Sensoriamento Remoto</a>
             </p>
             <hr />
             <div class="img-modal-about">
-              <img
-                height="80px"
-                src="images/logos/CEPAGRI-Logo.png"
-                alt="Cepagri-Logo"
-              />
+              <img height="80px" src="images/logos/CEPAGRI-Logo.png" alt="Cepagri-Logo" />
             </div>
             <hr />
             <h6>Referência</h6>
@@ -216,82 +128,42 @@
               seguinte formato: "Plataforma LabSat - Aplicação para visualização
               interativa dos dados do satélite GOES-16, acessado em [data]
               através do link:
-              <a href="https://plataforma.labsat.cpa.unicamp.br/"
-                >https://plataforma.labsat.cpa.unicamp.br/</a
-              >". Em nenhum caso o CEPAGRI/UNICAMP pode ser responsabilizado por
+              <a href="https://plataforma.labsat.cpa.unicamp.br/">https://plataforma.labsat.cpa.unicamp.br/</a>". Em
+              nenhum caso o CEPAGRI/UNICAMP pode ser responsabilizado por
               danos especiais, indiretos ou decorrentes, ou nenhum dano
               vinculado ao que provenha do uso destes produtos.
             </p>
           </div>
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              id="about-close"
-              data-dismiss="modal"
-            >
+            <button type="button" class="btn btn-secondary" id="about-close" data-dismiss="modal">
               Fechar
             </button>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- leaflet map -->
+  
     <div id="map"></div>
-  </body>
 
-  <!-- jquery -->
-  <script
-    type="text/javascript"
-    src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
-  ></script>
-  <!-- Moment.js -->
-  <script
-    type="text/javascript"
-    src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.0/moment.min.js"
-  ></script>
-  <!-- bootstrap -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"
-  ></script>
-  <!-- Tempusdominus (datepicker) -->
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"
-    integrity="sha512-k6/Bkb8Fxf/c1Tkyl39yJwcOZ1P4cRrJu77p83zJjN2Z55prbFHxPs9vN7q3l3+tSMGPDdoH51AEU8Vgo1cgAA=="
-    crossorigin="anonymous"
-  ></script>
-  <!-- leaflet -->
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-  ></script>
-  <!-- Geocoder -->
-  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-  <!-- timedimension -->
-  <script
-    type="text/javascript"
-    src="https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"
-  ></script>
-  <script
-    type="text/javascript"
-    src="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"
-  ></script>
-  <!-- easybutton -->
-  <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
-  <!-- map-screenshoter -->
-  <script src="https://unpkg.com/leaflet-simple-map-screenshoter"></script>
-  <!-- Timedimension goes extend -->
-  <script src="js/leaflet.timedimension.tilelayer.goes.min.js"></script>
-  <!-- Load Esri Leaflet from CDN -->
-  <script src="https://unpkg.com/esri-leaflet@3.0.12/dist/esri-leaflet.js"></script>
-  <script src="https://unpkg.com/esri-leaflet-vector@4.2.3/dist/esri-leaflet-vector.js"></script>
-  <!-- main code -->
-  <script src="./js/labsat.js"></script>
-  <!-- 
-    <script src="./js/config.js"></script> 
-  -->
+    <!-- Scripts -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.0/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"
+      integrity="sha512-k6/Bkb8Fxf/c1Tkyl39yJwcOZ1P4cRrJu77p83zJjN2Z55prbFHxPs9vN7q3l3+tSMGPDdoH51AEU8Vgo1cgAA=="
+      crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+    <script src="https://unpkg.com/leaflet-simple-map-screenshoter"></script>
+    <script src="js/leaflet.timedimension.tilelayer.goes.min.js"></script>
+    <!-- <script src="https://unpkg.com/esri-leaflet@3.0.12/dist/esri-leaflet.js"></script> -->
+    <!-- <script src="https://unpkg.com/esri-leaflet-vector@4.2.3/dist/esri-leaflet-vector.js"></script> -->
+    <script src="./js/L.Control.MousePosition.js"></script>
+    <script src="./js/labsat.js"></script>
+</body>
+
 </html>

@@ -1,555 +1,579 @@
-const defaultBounds = [
-    [-59.98897365428924, -5.026037385661109],
-    [59.999999999999986, -139.99999999999997],
-  ],
-  defaultBoundsRegions = [
-    [-59.98897365428924, -30.026037385661109],
-    [55.999999999999986, -139.99999999999997],
-  ],
-  toastLiveExample = document.getElementById("liveToast"),
-  toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
+class MapApp {
+  constructor() {
+      this.defaultBounds = [[-59.98897365428924, -5.026037385661109], [59.999999999999986, -139.99999999999997]];
+      this.defaultBoundsRegions = [[-59.98897365428924, -30.026037385661109], [55.999999999999986, -139.99999999999997]];
+      
+      this.map = null;
+      this.timeDimensionControl = null;
+      this.currentLayer = null;
+      this.overlayObj = null;
+      this.menuButton = null;
+      this.defaultLayer = null;
+      this.userLocationButton = null;
+      this.colorbar = null;
+      this.layerProduct = false;
+      this.toastLiveExample = document.getElementById("liveToast");
+      this.toastBootstrap = bootstrap.Toast.getOrCreateInstance(this.toastLiveExample);
+      this.overlay = null;
+      this.overlayLayer = null;
+      this.colorbarImg = null;
+      this.overlayColorbar = null;
+      this.overlayColorbarImg = null;
 
-let map,
-  timeDimensionControl,
-  currentLayer = null,
-  menuButton,
-  defaultLayer,
-  userLocationButton,
-  colorbar;
-
-function openSideNav() {
-  document.getElementById("side-nav").style.left = "0px";
-  map._controlContainer.firstChild.style.transition = "0.8s";
-  map._controlContainer.firstChild.style.left = "350px";
-  menuButton.state("close-options");
-  menuButton.getContainer().style.visibility = "hidden";
-}
-
-function closeSideNav() {
-  document.getElementById("side-nav").style.left = "-400px";
-  map._controlContainer.firstChild.style.transition = "0.8s";
-  map._controlContainer.firstChild.style.left = "0px";
-  menuButton.state("open-options");
-  menuButton.getContainer().style.visibility = "visible";
-}
-
-function getTiledLayer(selectedValue) {
-  if (currentLayer) {
-    map.removeLayer(currentLayer);
-    map.timeDimension.unregisterSyncedLayer(currentLayer);
+      this.init();
   }
-  let tiledLayer = L.tileLayer(
-    `https://eris.cpa.unicamp.br/{d}/{h}{m}/${selectedValue}/{z}/{x}/{y}.png`,
-    {
-      tms: true,
-      noWrap: true,
-      attribution: "",
-      minNativeZoom: 2,
-      maxNativeZoom: 7,
-      bounds: defaultBounds,
-      fadeAnimation: true,
-      zoomAnimation: true,
-      updateWhenIdle: true,
-      updateWhenZooming: true,
+
+  init() {
+      $('#labsat-btn').click(() => {
+          window.location.href = 'https://labsat.cpa.unicamp.br/';
+      });
+
+      this.fetchDates();
+  }
+
+  fetchDates() {
+    let dateUrl = "https://plataforma.labsat.cpa.unicamp.br/dates/date_truecolor.json";
+
+    if (localStorage.getItem('product')) {
+      const jsonProduct = localStorage.getItem('product').replace('ch', '')
+      dateUrl = `https://plataforma.labsat.cpa.unicamp.br/dates/date_${jsonProduct}.json`;
     }
-  );
 
-  let timeLayer = L.timeDimension.layer.tileLayer.goes(tiledLayer, {});
-  currentLayer = timeLayer.addTo(map);
-  map.timeDimension.registerSyncedLayer(currentLayer);
-}
-
-function setupDatePicker(dates) {
-  const lastDate = moment(dates[dates.length - 1], "YYYYMMDDHHmm");
-  const firstDate = moment(dates[0], "YYYYMMDDHHmm");
-
-  $("#datetimepicker1").datetimepicker({
-    format: "DD/MM/YYYY HH:mm UTC",
-    stepping: 10,
-    minDate: firstDate,
-    maxDate: lastDate,
-    date: lastDate,
-    keepOpen: false,
-    timeZone: "UTC",
-  });
-
-  $("#datetimepicker1").on("change.datetimepicker", function (event) {
-    const selectedDate = event.date.toDate();
-    const dateExists = dates.some(
-      (date) =>
-        moment.utc(date).format("YYYY-MM-DD HH:mm") ===
-        moment(event.date).format("YYYY-MM-DD HH:mm")
-    );
-
-    if (dateExists) {
-      map.timeDimension.setCurrentTime(
-        moment(selectedDate).subtract({ hours: 2, minutes: 50 }).toISOString()
-      );
-    } else {
-      $("#mensagemToast").text(
-        `Data: ${moment(event.date).format(
-          "YYYY/MM/DD HH:mm"
-        )} UTC indisponível`
-      );
-      $("#alertToast").text("Alerta");
-      $("#iconToast")
-        .addClass("fa fa-exclamation-triangle")
-        .css("color", "#AA0000");
-      toastBootstrap.show();
-    }
-  });
-}
-
-function changeColorbar(selectedValue) {
-  if (colorbar && selectedValue != "truecolor") {
-    colorbar.update = function (props) {
-      this._div.innerHTML = `<img src="./images/colorbars/${selectedValue}.png" class="colorbar" alt="Cepagri-Logo"/>
-      <i class="fa fa-times" id="colorbar-close" aria-hidden="true"></i>`;
+    const request = new XMLHttpRequest();
+    request.open("GET", dateUrl, true);
+    request.responseType = "json";
+    request.send();
+    request.onload = () => {
+        this.createMap(request.response.dates);
+        this.showWelcomeToast();
     };
   }
-  if (colorbar && selectedValue == "truecolor") {
-    colorbar.update = function (props) {
-      this._div.innerHTML = `<img src="./images/colorbars/ch13.png" class="colorbar" alt="Cepagri-Logo"/>
-      <i class="fa fa-times" id="colorbar-close" aria-hidden="true"></i>`;
-    };
+
+  openSideNav() {
+      document.getElementById("side-nav").style.left = "0px";
+      this.map._controlContainer.firstChild.style.transition = "0.8s";
+      this.map._controlContainer.firstChild.style.left = "350px";
+      this.menuButton.state("close-options");
+      this.menuButton.getContainer().style.visibility = "hidden";
   }
-  colorbar.update();
-  $("#colorbar-close").on("click", function () {
-    if (colorbar) {
-      map.removeControl(colorbar);
-      colorbar = null;
-      localStorage.setItem("colorbar", false);
-      colorbarButton.addTo(map);
-    }
-  });
-}
 
-function setupColorbar(selectedValue) {
-  if (colorbar) return;
-  colorbar = L.control({ position: "bottomright" });
-
-  colorbar.onAdd = function (map) {
-    this._div = L.DomUtil.create("div", "info");
-    this.update();
-    return this._div;
-  };
-
-  colorbar.update = function (props) {
-    if (selectedValue && selectedValue != "truecolor") {
-      this._div.innerHTML = `<img src="./images/colorbars/${selectedValue}.png" class="colorbar" alt="Cepagri-Logo"/>
-      <i class="fa fa-times" id="colorbar-close" aria-hidden="true"></i>
-      `;
-    } else if (selectedValue == "truecolor") {
-      this._div.innerHTML = `<img src="./images/colorbars/ch13.png" class="colorbar" alt="Cepagri-Logo"/>
-      <i class="fa fa-times" id="colorbar-close" aria-hidden="true"></i>`;
-    } else {
-      this._div.innerHTML = "";
-    }
-  };
-
-  colorbar.addTo(map);
-
-  $("#colorbar-close").on("click", function () {
-    if (colorbar) {
-      map.removeControl(colorbar);
-      colorbar = null;
-      localStorage.setItem("colorbar", false);
-      colorbarButton.addTo(map);
-    }
-  });
-}
-
-function changeLayer() {
-  let selectedValue = document.getElementById("layerSelect").value;
-
-  localStorage.setItem("product", selectedValue);
-  try {
-    changeColorbar(selectedValue);
-  } catch (error) {
-    console.log("Colorbar Change Error");
+  closeSideNav() {
+      document.getElementById("side-nav").style.left = "-400px";
+      this.map._controlContainer.firstChild.style.transition = "0.8s";
+      this.map._controlContainer.firstChild.style.left = "0px";
+      this.menuButton.state("open-options");
+      this.menuButton.getContainer().style.visibility = "visible";
   }
-  let baseUrl = "https://plataforma.labsat.cpa.unicamp.br/dates/";
 
-  let dateUrl =
-    selectedValue !== "truecolor"
-      ? `${baseUrl}date_${selectedValue}.json`
-      : `${baseUrl}date_ch17.json`;
-
-  let request = new XMLHttpRequest();
-  request.open("GET", dateUrl);
-  request.responseType = "json";
-  request.send();
-
-  request.onload = function () {
-    dates = request.response.dates;
-    map.timeDimension.setAvailableTimes(dates, "replace");
-    setupDatePicker(dates);
-    try {
-      map.timeDimension.setCurrentTime(moment(dates[dates.length - 2]));
-      getTiledLayer(selectedValue);
-    } catch (error) {
-      console.log("Erro linha 53");
-    }
-  };
-}
-
-function toastFirtTime() {
-  if (localStorage.getItem("firstTime")) return;
-  localStorage.setItem("firstTime", true);
-
-  $("#mensagemToast").text("Bem vindo(a) ao Labsat!");
-  $("#alertToast").text("LABSAT");
-  $("#iconToast").addClass("fa fa-check").css("color", "#0e4c66");
-  toastBootstrap.show();
-}
-
-function createMap(dates) {
-  map = L.map("map", {
-    minZoom: 4,
-    maxZoom: 7,
-    noWrap: true,
-    attributionControl: false,
-    maxBounds: defaultBounds,
-    timeDimension: true,
-    timeDimensionOptions: {
-      times: dates,
-      period: "PT10M",
-    },
-  }).setView([-15, -60], 5);
-  timeDimensionControl = new L.Control.TimeDimensionCustom({
-    position: "topright",
-    timeZones: ["UTC", "Local"],
-    autoPlay: false,
-    loopButton: true,
-    timeSteps: 1,
-    playReverseButton: false,
-    limitSliders: false,
-    minSpeed: 1,
-    maxSpeed: 7,
-    speedStep: 1,
-    timeSliderDragUpdate: true,
-    playerOptions: {
-      transitionTime: 350,
-      loop: true,
-      buffer: 2,
-      minBufferReady: 1,
-      startOver: true,
-    },
-  });
-
-  map.addControl(timeDimensionControl);
-
-  defaultLayer = localStorage.getItem("product") || "truecolor";
-
-  $("#layerSelect").val(defaultLayer);
-  $("#layerSelect").change();
-
-  getTiledLayer(defaultLayer);
-
-  menuButton = L.easyButton({
-    states: [
-      {
-        stateName: "open-options",
-        icon: '<i id="menu-button" class="fa fa-bars" aria-hidden="true"></i>',
-        title: "Acessar opções CEPAGRI",
-        onClick: function (e, a) {
-          openSideNav();
-        },
-      },
-      {
-        stateName: "close-options",
-        icon: '<i id="menu-button" class="fa fa-bars" aria-hidden="true"></i>',
-        title: "Acessar opções CEPAGRI",
-        onClick: function (e, a) {
-          closeSideNav();
-        },
-      },
-    ],
-    position: "topleft",
-  }).addTo(map);
-
-  $("#close-menu-button").on("click", function () {
-    closeSideNav();
-  });
-
-  // Botão sobre
-  sobre = L.easyButton({
-    states: [
-      {
-        icon: '<i id="about-button" class="fa fa-info-circle" aria-hidden="true"></i>',
-        title: "Sobre",
-        onClick: function (e, a) {
-          $("#about").modal("show");
-        },
-      },
-    ],
-    position: "topleft",
-  }).addTo(map);
-
-  $("#about-close").on("click", function () {
-    $("#about").modal("hide");
-  });
-
-  // Adicionando  Botão Pesquisar
-  L.Control.geocoder({
-    placeholder: "Pesquisar localização...",
-    errorMessage:
-      '<i class="fa fa-exclamation-circle" aria-hidden="true"></i> Localização não encontrada',
-    position: "topright",
-  }).addTo(map);
-
-  // Configurando e adicionando map ScreenShoter
-  L.simpleMapScreenshoter({
-    position: "topright",
-    hideElementsWithSelectors: [
-      ".leaflet-touch .leaflet-control-attribution",
-      ".leaflet-touch .leaflet-control-layers",
-      ".leaflet-touch .leaflet-bar",
-      ".leaflet-control-simpleMapScreenshoter",
-    ],
-    screenName: function () {
-      try {
-        const layerValueNow = localStorage.getItem("product") || "True Color";
-        return (
-          moment
-            .utc(map.timeDimension.getCurrentTime())
-            .format("YYYY-MM-DD_HH-mm") +
-          "_UTC_CEPAGRI_" +
-          layerValueNow
-        );
-      } catch (error) {
-        return "CEPAGRI_ch??";
+  getTiledLayer(selectedValue) {
+      if (this.currentLayer) {
+          this.map.removeLayer(this.currentLayer);
+          this.map.timeDimension.unregisterSyncedLayer(this.currentLayer);
       }
-    },
-  }).addTo(map);
 
-  map.on("simpleMapScreenshoter.takeScreen", () => {
-    timeDimensionControl._player.stop();
-    $("#mensagemToast").text(
-      "Carregando sua imagem. Isso pode levar alguns instantes."
-    );
-    $("#alertToast").text("Processando...");
-    $("#iconToast")
-      .addClass("fa fa-spinner fa-spin fa-fw")
-      .css("color", "#0e4c66");
-    toastBootstrap.show();
-  });
-
-  map.on("simpleMapScreenshoter.done", () => {
-    timeDimensionControl._player.stop();
-    $("#mensagemToast").text("Imagem pronta!");
-    $("#alertToast").text("Baixando...");
-    $("#iconToast").addClass("fa fa-check").css("color", "#4CBB17");
-    toastBootstrap.show();
-  });
-
-  // Adicionando botão Ir para minha localização
-  userLocationButton = L.easyButton({
-    states: [
-      {
-        stateName: "find-user-location",
-        icon: '<i id="find-user-location-button" class="fa fa-map-marker" aria-hidden="true"></i>',
-        title: "Ir para minha localização",
-        onClick: function (e, a) {
-          userLocationButton.state("searching-user-location");
-
-          let timeout = setTimeout(() => {
-            userLocationButton.state("find-user-location");
-          }, 10000);
-
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-              function (position) {
-                clearTimeout(timeout);
-                let { latitude, longitude } = position.coords;
-                let userMarker = L.marker([latitude, longitude]).bindPopup(
-                  "Sua localização",
-                  {
-                    className: "style_popup",
-                  }
-                );
-                map.addLayer(userMarker);
-                map.setView([latitude, longitude], 7);
-                userLocationButton.state("find-user-location");
-              },
-              function (error) {
-                clearTimeout(timeout);
-                console.log("Erro ao obter localização:", error.message);
-                userLocationButton.state("find-user-location");
-              }
-            );
-          } else {
-            clearTimeout(timeout);
-            console.log("Geolocation is not supported by this browser.");
-            userLocationButton.state("find-user-location");
+      const tiledLayer = L.tileLayer(
+          `https://eris.cpa.unicamp.br/{d}/{h}{m}/${selectedValue}/{z}/{x}/{y}.png`, {
+              tms: true,
+              noWrap: true,
+              attribution: "",
+              minNativeZoom: 4,
+              maxNativeZoom: 6,
+              bounds: this.defaultBounds,
+              keepBuffer: 8
           }
-        },
-      },
-      {
-        stateName: "searching-user-location",
-        icon: '<i class="fa fa-spinner fa-spin fa-fw"></i>',
-        title: "Procurando sua localização...",
-        onClick: function (e, a) {},
-      },
-    ],
-    position: "topright",
-  }).addTo(map);
+      );
 
-  // Adicionando Botão Selecionar camadas
-  (function () {
-    map.createPane("references-pane");
-    map.getPane("references-pane").style.zIndex = 201;
+      const timeLayer = L.timeDimension.layer.tileLayer.goes(tiledLayer, {});
+      this.currentLayer = timeLayer.addTo(this.map);
+      this.map.timeDimension.registerSyncedLayer(this.currentLayer);
+  }
+
+  setupDatePicker(dates) {
+      const lastDate = moment(dates[dates.length - 1], "YYYYMMDDHHmm");
+      const firstDate = moment(dates[0], "YYYYMMDDHHmm");
+
+      $("#datetimepicker1").datetimepicker({
+          format: "DD/MM/YYYY HH:mm UTC",
+          stepping: 10,
+          minDate: firstDate,
+          maxDate: lastDate,
+          date: lastDate,
+          keepOpen: false,
+          timeZone: "UTC",
+      });
+
+      $("#datetimepicker1").on("change.datetimepicker", (event) => {
+          const selectedDate = event.date.toDate();
+          const dateExists = dates.some(date =>
+              moment.utc(date).format("YYYY-MM-DD HH:mm") === moment(event.date).format("YYYY-MM-DD HH:mm")
+          );
+
+          if (dateExists) {
+              this.map.timeDimension.setCurrentTime(moment(selectedDate).subtract({ hours: 2, minutes: 50 }).toISOString());
+          } else {
+              this.showDateUnavailableToast(event.date);
+          }
+      });
+  }
+
+  showDateUnavailableToast(date) {
+      $("#mensagemToast").text(`Data: ${moment(date).format("YYYY/MM/DD HH:mm")} UTC indisponível`);
+      $("#alertToast").text("Alerta");
+      $("#iconToast").addClass("fa fa-exclamation-triangle").css("color", "#AA0000");
+      this.toastBootstrap.show();
+  }
+
+  showWelcomeToast() {
+      if (localStorage.getItem("firstTime")) return;
+      localStorage.setItem("firstTime", true);
+
+      $("#mensagemToast").text("Bem vindo(a) ao Labsat!");
+      $("#alertToast").text("LABSAT");
+      $("#iconToast").addClass("fa fa-check").css("color", "#0e4c66");
+      this.toastBootstrap.show();
+  }
+
+  createMap(dates) {
+      this.map = L.map("map", {
+          minZoom: 4,
+          maxZoom: 6,
+          noWrap: true,
+          attributionControl: false,
+          maxBounds: this.defaultBounds,
+          timeDimension: true,
+          timeDimensionOptions: {
+              times: dates,
+              period: "PT10M",
+          },
+      }).setView([-15, -60], 5);
+      
+      this.initializeControls(dates);
+  }
+
+  initializeControls(dates) {
+      this.timeDimensionControl = new L.Control.TimeDimensionCustom({
+          position: "topright",
+          timeZones: ["UTC", "Local"],
+          autoPlay: false,
+          loopButton: true,
+          timeSteps: 1,
+          playReverseButton: false,
+          limitSliders: false,
+          minSpeed: 1,
+          maxSpeed: 7,
+          speedStep: 1,
+          timeSliderDragUpdate: true,
+          playerOptions: {
+              transitionTime: 350,
+              loop: true,
+              buffer: 2,
+              minBufferReady: 1,
+              startOver: true,
+          },
+      });
+
+      L.control.mousePosition().addTo(this.map);
+      this.map.addControl(this.timeDimensionControl);
+      
+      this.defaultLayer = localStorage.getItem("product") || "truecolor";
+      $("#layerSelect").val(this.defaultLayer).change();
+      
+      this.getTiledLayer(this.defaultLayer);
+      this.setupMenuButton();
+      this.setupAboutButton();
+      this.setupGeocoder();
+      this.setupScreenshoter();
+      this.setupUserLocationButton();
+      this.setupLayersControl();
+      this.setupDatePicker(dates);
+      this.addLogoControl();
+      this.setupColorbar();
+  }
+
+  setupMenuButton() {
+      this.menuButton = L.easyButton({
+          states: [
+              {
+                  stateName: "open-options",
+                  icon: '<i id="menu-button" class="fa fa-bars" aria-hidden="true"></i>',
+                  title: "Acessar opções CEPAGRI",
+                  onClick: () => this.openSideNav(),
+              },
+              {
+                  stateName: "close-options",
+                  icon: '<i id="menu-button" class="fa fa-bars" aria-hidden="true"></i>',
+                  title: "Acessar opções CEPAGRI",
+                  onClick: () => this.closeSideNav(),
+              },
+          ],
+          position: "topleft",
+      }).addTo(this.map);
+      
+      $("#close-menu-button").on("click", () => this.closeSideNav());
+  }
+
+  setupAboutButton() {
+      const aboutButton = L.easyButton({
+          states: [
+              {
+                  icon: '<i id="about-button" class="fa fa-info-circle" aria-hidden="true"></i>',
+                  title: "Sobre",
+                  onClick: () => $("#about").modal("show"),
+              },
+          ],
+          position: "topleft",
+      }).addTo(this.map);
+      
+      $("#about-close").on("click", () => $("#about").modal("hide"));
+  }
+
+  setupGeocoder() {
+      L.Control.geocoder({
+          placeholder: "Pesquisar localização...",
+          errorMessage: '<i class="fa fa-exclamation-circle" aria-hidden="true"></i> Localização não encontrada',
+          position: "topright",
+      }).addTo(this.map);
+  }
+
+  setupScreenshoter() {
+      L.simpleMapScreenshoter({
+          position: "topright",
+          hideElementsWithSelectors: [
+              ".leaflet-touch .leaflet-control-attribution",
+              ".leaflet-touch .leaflet-control-layers",
+              ".leaflet-touch .leaflet-bar",
+              ".leaflet-control-simpleMapScreenshoter",
+          ],
+          screenName: () => {
+              const layerValueNow = localStorage.getItem("product") || "True Color";
+              return `${moment.utc(this.map.timeDimension.getCurrentTime()).format("YYYY-MM-DD_HH-mm")}_UTC_CEPAGRI_${layerValueNow}`;
+          },
+      }).addTo(this.map);
+
+      this.map.on("simpleMapScreenshoter.takeScreen", () => {
+          this.timeDimensionControl._player.stop();
+          $("#mensagemToast").text("Carregando sua imagem. Isso pode levar alguns instantes.");
+          $("#alertToast").text("Processando...");
+          $("#iconToast").addClass("fa fa-spinner fa-spin fa-fw").css("color", "#0e4c66");
+          this.toastBootstrap.show();
+      });
+
+      this.map.on("simpleMapScreenshoter.done", () => {
+          this.timeDimensionControl._player.stop();
+          $("#mensagemToast").text("Captura de tela finalizada.");
+          $("#alertToast").text("LABSAT");
+          $("#iconToast").removeClass("fa fa-spinner fa-spin fa-fw").addClass("fa fa-check").css("color", "#0e4c66");
+          this.toastBootstrap.show();
+      });
+  }
+
+  setupUserLocationButton() {
+      this.userLocationButton = L.easyButton({
+          states: [
+              {
+                  icon: '<i id="user-location-button" class="fa fa-map-marker" aria-hidden="true"></i>',
+                  title: "Localização do usuário",
+                  onClick: () => {
+                      this.map.locate({ setView: true, maxZoom: 16 });
+                  },
+              },
+          ],
+          position: "topright",
+      }).addTo(this.map);
+
+      this.map.on("locationfound", (e) => {
+          L.marker(e.latlng).addTo(this.map).bindPopup("Você está aqui!").openPopup();
+          this.map.setView(e.latlng, 16);
+      });
+  }
+
+  setupLayersControl() {
+    this.map.createPane("references-pane");
+    this.map.getPane("references-pane").style.zIndex = 201;
 
     let countriesLayer = L.layerGroup();
     let statesLayer = L.layerGroup();
 
-    // geoJSON
     fetch("./shapefiles/americas.geojson")
-      .then((response) => response.json())
-      .then((data) => {
-        L.geoJSON(data, {
-          style: function (feature) {
-            return {
-              fillOpacity: 0,
-              weight: 0.4,
-              opacity: 1,
-              color: "White",
-            };
-          },
-        }).addTo(countriesLayer);
-      });
+        .then((response) => response.json())
+        .then((data) => {
+            L.geoJSON(data, {
+                style: function () {
+                    return {
+                        fillOpacity: 0,
+                        weight: 0.4,
+                        opacity: 1,
+                        color: "White",
+                    };
+                },
+            }).addTo(countriesLayer);
+        });
 
     fetch("./shapefiles/brazil-states.geojson")
-      .then((response) => response.json())
-      .then((data) => {
-        L.geoJSON(data, {
-          style: function (feature) {
-            return {
-              fillOpacity: 0,
-              weight: 0.4,
-              opacity: 1,
-              color: "White",
-            };
-          },
-        }).addTo(statesLayer);
-      });
+        .then((response) => response.json())
+        .then((data) => {
+            L.geoJSON(data, {
+                style: function () {
+                    return {
+                        fillOpacity: 0,
+                        weight: 0.4,
+                        opacity: 1,
+                        color: "White",
+                    };
+                },
+            }).addTo(statesLayer);
+        });
 
-    let cartoLabels = L.esri.Vector.vectorBasemapLayer(
-      "arcgis/human-geography/labels",
-      {
-        apiKey: API_KEY,
-        version: 2,
-        language: "pt-BR",
-      }
+    let cartoLabels = L.tileLayer(
+        "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",
+        {
+            minZoom: 3,
+            maxZoom: 7,
+            zIndex: 100,
+            attribution: "",
+            bounds: this.defaultBoundsRegions,
+            pane: "references-pane",
+        }
     );
 
-    // let cartoLabels = L.tileLayer(
-    //   "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",
-    //   {
-    //     minZoom: 3,
-    //     maxZoom: 7,
-    //     zIndex: 100,
-    //     attribution: "",
-    //     bounds: defaultBoundsRegions,
-    //     pane: "references-pane",
-    //   }
-    // );
-
     let overlayMaps = {
-      Lugares: cartoLabels,
-      Fronteiras: countriesLayer,
-      Estados: statesLayer,
+        "Lugares": cartoLabels,
+        "Fronteiras": countriesLayer,
+        "Estados Brasileiros": statesLayer,
     };
-    map.addLayer(cartoLabels);
-    map.addLayer(countriesLayer);
-    map.addLayer(statesLayer);
+
+    this.map.addLayer(cartoLabels);
+    this.map.addLayer(countriesLayer);
+    this.map.addLayer(statesLayer);
 
     let layerControl = L.control.layers(null, overlayMaps, {
-      collapsed: false,
+        collapsed: false,
     });
 
     let stateLayerControl = false;
 
     L.easyButton({
-      states: [
-        {
-          stateName: "open-options",
-          icon: '<i class="fa fa-map" aria-hidden="true"></i>',
-          title: "Selecionar camadas",
-          onClick: function (e, a) {
-            stateLayerControl = !stateLayerControl;
-            if (stateLayerControl) {
-              layerControl.addTo(map);
-            } else {
-              map.removeControl(layerControl);
-            }
-          },
-        },
-      ],
-      position: "topright",
-    }).addTo(map);
-  })();
+        states: [
+            {
+                stateName: "open-options",
+                icon: '<i class="fa fa-map" aria-hidden="true"></i>',
+                title: "Selecionar camadas",
+                onClick: () => {
+                    stateLayerControl = !stateLayerControl;
+                    if (stateLayerControl) {
+                        this.map.addControl(layerControl);
+                    } else {
+                        this.map.removeControl(layerControl);
+                    }
+                },
+            },
+        ],
+        position: "topright",
+    }).addTo(this.map);
+  }
 
-  // Configurando datetimepicker
-  setupDatePicker(dates);
+  changeLayer() {
+      const selectedValue = document.getElementById("layerSelect").value;
+      const cleanedValue = selectedValue.replace("ch", "");
 
-  // Adicionando logo CEPAGRI
-  (function () {
-    cepagriLogo = L.control({ position: "bottomright" });
-    cepagriLogo.onAdd = function (map) {
+      localStorage.setItem("product", selectedValue);
+
+      const baseUrl = "https://plataforma.labsat.cpa.unicamp.br/dates/";
+      const dateUrl = `${baseUrl}date_${cleanedValue}.json`;
+
+      const request = new XMLHttpRequest();
+      request.open("GET", dateUrl);
+      request.responseType = "json";
+      request.send();
+
+      request.onload = () => {
+          const dates = request.response.dates;
+          this.map.timeDimension.setAvailableTimes(dates, "replace");
+          this.setupDatePicker(dates);
+          this.map.timeDimension.setCurrentTime(moment(dates[dates.length - 2]));
+          this.getTiledLayer(selectedValue);
+
+          if (this.colorbar) {
+            this.changeColorbar();
+          }
+      };
+  }
+
+  addLogoControl() {
+    const logoControl = L.control({ position: "bottomright" });
+
+    logoControl.onAdd = function (map) {
       this._div = L.DomUtil.create("div", "logoCepagriPrint");
       this.update();
       return this._div;
     };
-    cepagriLogo.update = function (props) {
-      this._div.innerHTML = `<img src="./images/logos/CEPAGRI-Logo.png" alt="Cepagri-Logo"/>`;
+    logoControl.update = function (props) {
+      this._div.innerHTML = '<img src="./images/logos/CEPAGRI-Logo.png" alt="Cepagri-Logo"/>;'
     };
-    cepagriLogo.addTo(map);
-  })();
+    logoControl.addTo(this.map);
+  }
+  
+  changeOverlayer() {
+    const overlayName = document.getElementById("overlaySelect").value;
 
-  // Adicionando colorbar
-  colorbarButton = L.easyButton({
-    states: [
-      {
-        stateName: "open-colorbar",
-        icon: '<i class="fa fa-bar-chart" aria-hidden="true"></i>',
-        title: "Abrir tabela de cores",
-        onClick: function (btn, map) {
-          let selectedValue = document.getElementById("layerSelect").value;
-          if (localStorage.getItem("product")) {
-            selectedValue = localStorage.getItem("product");
-          }
-          setupColorbar(selectedValue);
-          localStorage.setItem("colorbar", true);
-          map.removeControl(colorbarButton);
-        },
-      },
-    ],
-    position: "bottomright",
-  });
-
-  if (localStorage.getItem("colorbar") == "false") {
-    colorbarButton.addTo(map);
-  } else {
-    let selectedValue = document.getElementById("layerSelect").value;
-    if (localStorage.getItem("product")) {
-      selectedValue = localStorage.getItem("product");
+    if (this.overlayObj) {
+      this.map.removeLayer(this.overlayObj);
+      this.map.timeDimension.unregisterSyncedLayer(this.overlayObj);
     }
-    setupColorbar(selectedValue);
+  
+    if(overlayName) {
+      const overlayTileLayer = L.tileLayer(`https://eris.cpa.unicamp.br/{d}/{h}{m}/${overlayName}/{z}/{x}/{y}.png`,
+        {
+          tms: true,
+          noWrap: true,
+          attribution: "",
+          minNativeZoom: 4,
+          maxNativeZoom: 6,
+          bounds: this.defaultBounds,
+          keepBuffer: 8
+        }
+      );
+        
+      const overlayLayerObj = L.timeDimension.layer.tileLayer.goes(overlayTileLayer, {});
+      this.overlayObj = overlayLayerObj.addTo(this.map);
+      this.map.timeDimension.registerSyncedLayer(this.overlayObj);
+      
+      this.setupOverlayColorbar();
+    }
+  }
+
+  changeColorbar() {
+    const selectedValue = document.getElementById("layerSelect").value;
+    const imageSrc = selectedValue === "truecolor" 
+        ? "./images/colorbars/ch13.png" 
+        : `./images/colorbars/${selectedValue}.png`;
+
+    if (this.colorbarImg) {
+        this.colorbarImg.update = function () {
+            this._div.innerHTML = `
+                <img src="${imageSrc}" class="colorbar" alt="Cepagri-Logo"/>
+                <i class="fa fa-times" id="colorbar-close-layer" aria-hidden="true"></i>
+            `;
+        };
+
+        this.colorbarImg.update();
+    }
+
+    $("#colorbar-close-layer").on("click", () => {
+        if (this.colorbarImg) {
+            this.map.removeControl(this.colorbarImg);
+            this.colorbarImg = null;
+            this.colorbar.addTo(this.map);
+        }
+    });
+  }
+
+  openColorbar() {
+      const selectedValue = document.getElementById("layerSelect").value;
+      
+      this.colorbarImg = L.control({position: "bottomright"});
+    
+      this.colorbarImg.onAdd = function () {
+        this._div = L.DomUtil.create("div", "info");
+        this.update();
+        return this._div;
+      };
+    
+      this.colorbarImg.update = function () {
+        if (selectedValue == 'truecolor') {
+          this._div.innerHTML = `<img src="./images/colorbars/ch13.png" class="colorbar" alt="Cepagri-Logo"/>` +
+                                `<i class="fa fa-times" id="colorbar-close-layer" aria-hidden="true"></i>`;
+        } else {
+          this._div.innerHTML = `<img src="./images/colorbars/${selectedValue}.png" class="colorbar" alt="Cepagri-Logo"/>` +
+                                `<i class="fa fa-times" id="colorbar-close-layer" aria-hidden="true"></i>`;
+        }
+      };
+
+      this.colorbarImg.addTo(this.map);
+      
+      $("#colorbar-close-layer").on("click", () => {
+        if (this.colorbarImg) {
+          this.map.removeControl(this.colorbarImg);
+          this.colorbarImg = null;
+          this.setupColorbar();
+        }
+      });
+  }
+
+  setupColorbar() {
+      this.colorbar = L.easyButton({
+        states: [
+          {
+            stateName: "open-colorbar",
+            icon: '<i class="fa fa-bar-chart" aria-hidden="true"></i>',
+            title: "Abrir tabela de cores",
+            onClick: () => {
+              this.openColorbar();
+              this.map.removeControl(this.colorbar);
+            },
+          },
+        ],
+        position: "bottomright",
+      });
+
+      this.colorbar.addTo(this.map);
+  }
+
+  openOverlayColorbar() {
+      const selectedValue = document.getElementById("overlaySelect").value;
+      this.overlayColorbarImg = L.control({position: "bottomright"});
+    
+      this.overlayColorbarImg.onAdd = function () {
+        this._div = L.DomUtil.create("div", "info");
+        this.update();
+        return this._div;
+      };
+    
+      this.overlayColorbarImg.update = function () {
+        if (selectedValue) {
+          this._div.innerHTML = `<img src="./images/colorbars/${selectedValue}.png" class="colorbar" alt="Cepagri-Logo"/>` +
+                                `<i class="fa fa-times" id="colorbar-overlay-close" aria-hidden="true"></i>`;
+        }
+      };
+
+      this.overlayColorbarImg.addTo(this.map);
+      
+      $("#colorbar-overlay-close").on("click", () => {
+        if (this.overlayColorbarImg) {
+          this.map.removeControl(this.overlayColorbarImg);
+          this.overlayColorbarImg = null;
+          this.setupOverlayColorbar();
+        }
+      });
+  }
+
+  setupOverlayColorbar() {
+      if (this.overlayColorbarImg) {
+        this.map.removeControl(this.overlayColorbarImg);
+        this.overlayColorbarImg = null;
+      }
+      if (this.overlayColorbar)
+        this.map.removeControl(this.overlayColorbar);
+
+
+      this.overlayColorbar = L.easyButton({
+        states: [
+          {
+            stateName: "open-colorbar",
+            icon: '<i class="fa fa-bar-chart" aria-hidden="true"></i>',
+            title: "Abrir tabela de cores",
+            onClick: () => {
+              this.openOverlayColorbar();
+              this.map.removeControl(this.overlayColorbar);
+            },
+          },
+        ],
+        position: "bottomright",
+      });
+      if (document.getElementById("overlaySelect").value != '0') {
+        this.overlayColorbar.addTo(this.map);
+      }
   }
 }
 
-window.onload = function () {
-  (function getDate() {
-    let dateUrl =
-      "https://plataforma.labsat.cpa.unicamp.br/dates/date_ch17.json";
-    let request = new XMLHttpRequest();
-    request.open("GET", dateUrl, true);
-    request.responseType = "json";
-    request.send();
-    request.onload = function () {
-      createMap(request.response.dates);
-      toastFirtTime();
-    };
-  })();
-};
+const mapApp = new MapApp();

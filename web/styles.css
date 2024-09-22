@@ -91,15 +91,31 @@ body {
   border-radius: 5px;
 }
 .info img {
-  width: 400px;
+  width: 320px;
 }
-#colorbar-close {
-  padding: 10px 10px;
+#colorbar-close-layer {
+  padding: 2px 2px;
   cursor: pointer;
 }
-#colorbar-close:hover {
+
+#colorbar-close-layer:hover {
   color: rgb(255, 0, 0);
 }
+
+#colorbar-overlay-close {
+  padding: 2px 2px;
+  cursor: pointer;
+}
+
+#colorbar-overlay-close:hover {
+  color: rgb(255, 0, 0);
+}
+
+.labsat-btn {
+  cursor: pointer;
+}
+
+
 .logoCepagriPrint {
   border-radius: 5px;
   padding: 6px 8px;
@@ -108,9 +124,17 @@ body {
 .logoCepagriPrint img {
   width: 230px;
 }
-
 .leaflet-control-layers-overlays label {
   margin-bottom: 0px !important;
+}
+
+.leaflet-container .leaflet-control-mouseposition {
+  background-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 5px #bbb;
+  padding: 0 5px;
+  margin:0;
+  color: #333;
+  font: 11px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
 
 @media (max-width: 650px) {
